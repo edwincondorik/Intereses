@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>Libro de Intereses — Agosto 2026</title>
+<title id="pageTitle">Libro de Intereses</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -503,6 +503,43 @@
   }
 
   #printArea{display:none;}
+
+  .fullscreen-view{
+    position:fixed; inset:0;
+    background:var(--paper);
+    z-index:90;
+    display:none;
+    flex-direction:column;
+    overflow-y:auto;
+  }
+  .fullscreen-view.open{display:flex;}
+  .fs-head{
+    background:var(--ink);
+    color:var(--paper);
+    padding:18px 20px 16px;
+    flex-shrink:0;
+  }
+  .fs-head .fs-close{
+    position:absolute;
+    top:16px; right:16px;
+    background:rgba(255,255,255,0.12);
+    border:none;
+    color:#fff;
+    width:32px;height:32px;
+    border-radius:50%;
+    font-size:16px;
+  }
+  .fs-head h2{
+    font-family:var(--serif);
+    font-size:19px;
+    margin:0 0 2px;
+  }
+  .fs-head p{
+    margin:0;
+    font-size:12.5px;
+    color:var(--gold-soft);
+  }
+  .fs-body{padding:14px 16px 40px;}
   @media print{
     body *{visibility:hidden;}
     #printArea, #printArea *{visibility:visible;}
@@ -530,7 +567,7 @@
 
 <header class="cover">
   <p class="cover-eyebrow">Cuadro de intereses</p>
-  <h1 class="cover-title">Agosto 2026</h1>
+  <h1 class="cover-title" id="coverTitle">—</h1>
   <div class="cover-stats">
     <div class="stat">
       <div class="n" id="statCount">—</div>
@@ -659,6 +696,15 @@
   </div>
 </div>
 
+<div class="fullscreen-view" id="fullscreenView">
+  <div class="fs-head" style="position:relative;">
+    <button class="fs-close" id="fsClose">✕</button>
+    <h2 id="fsTitle">Resultado del filtro</h2>
+    <p id="fsSub"></p>
+  </div>
+  <div class="fs-body" id="fsBody"></div>
+</div>
+
 <div id="printArea"></div>
 
 <div class="toast" id="toast"></div>
@@ -748,7 +794,10 @@ function renderExcelView(list){
           <tr><td class="lbl">Total Interés</td><td class="val">${fmtBsExcel(interes)}</td></tr>
         </table>
       </div>
-      <div style="padding:12px 14px;">
+      <div style="padding:12px 14px 4px;">
+        <button class="btn-ghost" id="fsBtn" style="width:100%;">🔍 Ver en pantalla completa</button>
+      </div>
+      <div style="padding:8px 14px 12px;">
         <button class="btn-ghost" id="pdfBtn" style="width:100%;">📄 Exportar este filtro a PDF</button>
       </div>
     </div>
@@ -757,7 +806,43 @@ function renderExcelView(list){
     tr.addEventListener('click', ()=>openSheet(parseInt(tr.dataset.id)));
   });
   document.getElementById('pdfBtn').addEventListener('click', ()=>exportFilteredPDF(list, currentSearchQuery));
+  document.getElementById('fsBtn').addEventListener('click', ()=>openFullscreenView(list, currentSearchQuery));
 }
+
+function openFullscreenView(list, query){
+  const capital = list.reduce((a,l)=>a+Number(l.capital||0),0);
+  const interes = list.reduce((a,l)=>a+Number(l.interes||0),0);
+  let rows = '';
+  list.forEach((l,i)=>{
+    rows += `<tr>
+      <td class="center">${i+1}</td>
+      <td>${escapeHtml(l.nombre||'')}</td>
+      <td class="center">${l.fecha!=null ? l.fecha : ''}</td>
+      <td class="num">${fmtBsExcel(l.capital)}</td>
+      <td class="num">${fmtBsExcel(l.interes)}</td>
+    </tr>`;
+  });
+  document.getElementById('fsTitle').textContent = `"${query}"`;
+  document.getElementById('fsSub').textContent = `Cuadro de Intereses · ${currentMonthYearEs()}`;
+  document.getElementById('fsBody').innerHTML = `
+    <div class="excel-wrap">
+      <table class="excel-table">
+        <thead><tr><th>Nº</th><th>Nombre</th><th>Fecha</th><th>Capital</th><th>Interés</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="excel-summary">
+        <table>
+          <tr><td class="lbl">Nro. De Préstamos</td><td class="val">${list.length}</td></tr>
+          <tr><td class="lbl">Total Capital</td><td class="val">${fmtBsExcel(capital)}</td></tr>
+        </table>
+      </div>
+    </div>
+  `;
+  document.getElementById('fullscreenView').classList.add('open');
+}
+document.getElementById('fsClose').addEventListener('click', ()=>{
+  document.getElementById('fullscreenView').classList.remove('open');
+});
 
 function exportFilteredPDF(list, query){
   const capital = list.reduce((a,l)=>a+Number(l.capital||0),0);
@@ -774,7 +859,7 @@ function exportFilteredPDF(list, query){
   });
   document.getElementById('printArea').innerHTML = `
     <h2>CUADRO DE INTERESES</h2>
-    <p class="print-sub">AGOSTO 2026 · Filtro: "${escapeHtml(query)}"</p>
+    <p class="print-sub">${currentMonthYearEs().toUpperCase()} · Filtro: "${escapeHtml(query)}"</p>
     <table>
       <thead><tr><th>Nº</th><th>Nombre</th><th>Fecha</th><th>Capital</th><th>Interés</th></tr></thead>
       <tbody>${rows}</tbody>
@@ -994,7 +1079,8 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   ws['!cols'] = [{wch:5},{wch:22},{wch:8},{wch:12},{wch:12},{wch:14},{wch:16}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Real');
-  XLSX.writeFile(wb, 'Cuadro_Intereses_Agosto_2026.xlsx');
+  const fileLabel = currentMonthYearEs().replace(' ', '_');
+  XLSX.writeFile(wb, `Cuadro_Intereses_${fileLabel}.xlsx`);
   toast('Excel exportado');
 });
 
@@ -1039,6 +1125,7 @@ document.getElementById('clearAllBtn').addEventListener('click', ()=>{
 });
 
 document.getElementById('dedupeBtn').addEventListener('click', ()=>{
+  if(!confirm('Esto revisa toda tu lista y borra cualquier préstamo con el mismo nombre, día, capital e interés que otro. Ojo: si dos préstamos reales de la misma persona coinciden exactamente en esos datos, también se borraría uno de ellos. Úsalo solo si sospechas que cargaste un archivo repetido. ¿Continuar?')) return;
   const {clean, removed} = dedupeLoans(state.loans);
   if(removed===0){ toast('No se encontraron duplicados'); return; }
   state.loans = clean;
@@ -1052,6 +1139,15 @@ let pendingImport = [];
 document.getElementById('importBtn').addEventListener('click', ()=>{
   document.getElementById('fileInput').click();
 });
+
+function buildKeyCounts(list){
+  const m = new Map();
+  list.forEach(l=>{
+    const k = loanKey(l);
+    m.set(k, (m.get(k)||0) + 1);
+  });
+  return m;
+}
 
 document.getElementById('fileInput').addEventListener('change', function(e){
   const file = e.target.files[0];
@@ -1068,11 +1164,16 @@ document.getElementById('fileInput').addEventListener('change', function(e){
         return;
       }
       pendingImport = parsed;
-      const existingKeys = new Set(state.loans.map(loanKey));
-      const wouldDuplicate = parsed.filter(l=>existingKeys.has(loanKey(l))).length;
+      const remaining = buildKeyCounts(state.loans);
+      let wouldDuplicate = 0;
+      parsed.forEach(l=>{
+        const k = loanKey(l);
+        const n = remaining.get(k) || 0;
+        if(n > 0){ wouldDuplicate++; remaining.set(k, n-1); }
+      });
       document.getElementById('importSummary').innerHTML =
         `Se encontraron <b>${parsed.length}</b> préstamos en el archivo.` +
-        (wouldDuplicate>0 ? `<br><br>⚠️ <b>${wouldDuplicate}</b> ya existen en tu lista actual (mismo nombre, día, capital e interés). Si eliges "Agregar", esos se omitirán automáticamente para evitar duplicados.` : '<br><br>Ninguno coincide con préstamos que ya tienes.');
+        (wouldDuplicate>0 ? `<br><br>⚠️ <b>${wouldDuplicate}</b> ya están guardados igual (mismo nombre, día, capital e interés). Si eliges "Agregar", esos se omitirán; el resto se agrega tal cual, aunque haya montos repetidos entre sí.` : '<br><br>Ninguno coincide con préstamos que ya tienes guardados.');
       backdrop.classList.add('open');
       document.getElementById('importSheet').classList.add('open');
     }catch(err){
@@ -1092,13 +1193,13 @@ document.getElementById('importSheetClose').addEventListener('click', closeImpor
 document.getElementById('importCancelBtn').addEventListener('click', closeImportSheet);
 
 document.getElementById('importAddBtn').addEventListener('click', ()=>{
-  const existingKeys = new Set(state.loans.map(loanKey));
+  const remaining = buildKeyCounts(state.loans);
   let nextId = Math.max(0, ...state.loans.map(x=>x.id)) + 1;
   let added = 0, skipped = 0;
   pendingImport.forEach(l=>{
     const k = loanKey(l);
-    if(existingKeys.has(k)){ skipped++; return; }
-    existingKeys.add(k);
+    const n = remaining.get(k) || 0;
+    if(n > 0){ remaining.set(k, n-1); skipped++; return; }
     l.id = nextId++;
     state.loans.push(l);
     added++;
@@ -1157,11 +1258,21 @@ function parseLoanRows(rows){
 
   const out = [];
   let id = 1;
+  let consecutiveBlanks = 0;
   for(let i=headerIdx+1;i<rows.length;i++){
     const row = rows[i] || [];
+    const isBlankRow = row.every(c => c==null || String(c).trim()==='');
+    const hasTotalesMarker = row.some(c => String(c||'').trim().toUpperCase()==='TOTALES');
+    if(hasTotalesMarker) break; // reliable end-of-table marker (may land in the Nº column due to a merged cell)
+    if(isBlankRow){
+      consecutiveBlanks++;
+      if(consecutiveBlanks >= 15) break; // long stretch of empty rows = true end of sheet content
+      continue; // tolerate a stray blank separator row without ending the table
+    }
+    consecutiveBlanks = 0;
+
     const nombre = row[cols.nombre];
     if(nombre == null || String(nombre).trim()==='') continue;
-    if(String(nombre).trim().toUpperCase()==='TOTALES') break;
     const capital = parseFloat(row[cols.capital]) || 0;
     const interes = parseFloat(row[cols.interes]) || 0;
     let fecha = row[cols.fecha];
@@ -1193,9 +1304,73 @@ document.getElementById('installHint').addEventListener('click', function(){
   localStorage.setItem('installHintDismissed','1');
 });
 
+function currentMonthYearEs(){
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const d = new Date();
+  return `${meses[d.getMonth()]} ${d.getFullYear()}`;
+}
+function applyCurrentMonthHeader(){
+  const label = currentMonthYearEs();
+  document.getElementById('coverTitle').textContent = label;
+  document.getElementById('pageTitle').textContent = `Libro de Intereses — ${label}`;
+}
+
+function loanListFingerprint(list){
+  const total = list.reduce((a,l)=>a + Number(l.capital||0) + Number(l.interes||0), 0);
+  return list.length + '|' + total.toFixed(2);
+}
+
+async function checkHostedDataFile(){
+  try{
+    const res = await fetch('./data.xlsx?t=' + Date.now(), {cache:'no-store'});
+    if(!res.ok) return; // no data.xlsx uploaded yet in the repo — nothing to do
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:null});
+    const parsed = parseLoanRows(rows);
+    if(parsed.length === 0) return;
+
+    const fp = loanListFingerprint(parsed);
+    const lastSeen = localStorage.getItem('dataxlsx_fingerprint');
+    if(fp === lastSeen) return; // already applied this version, nothing changed
+
+    const hasExistingWork = state.loans.length > 0;
+    if(!hasExistingWork){
+      // nothing to lose — adopt it directly
+      state.loans = parsed;
+      persist();
+      localStorage.setItem('dataxlsx_fingerprint', fp);
+      render();
+      toast('Datos actualizados desde el Excel del repositorio');
+      return;
+    }
+
+    // there's existing local data/edits — ask before touching it, reusing the same import sheet
+    pendingImport = parsed;
+    const remaining = buildKeyCounts(state.loans);
+    let wouldDuplicate = 0;
+    parsed.forEach(l=>{
+      const k = loanKey(l);
+      const n = remaining.get(k) || 0;
+      if(n > 0){ wouldDuplicate++; remaining.set(k, n-1); }
+    });
+    document.getElementById('importSummary').innerHTML =
+      `📡 Se detectó una versión nueva del Excel en el repositorio, con <b>${parsed.length}</b> préstamos.` +
+      (wouldDuplicate>0 ? `<br><br>⚠️ <b>${wouldDuplicate}</b> ya están guardados igual. Si eliges "Agregar", esos se omitirán.` : '<br><br>Ninguno coincide con lo que ya tienes guardado.');
+    backdrop.classList.add('open');
+    document.getElementById('importSheet').classList.add('open');
+    localStorage.setItem('dataxlsx_fingerprint', fp);
+  }catch(err){
+    console.error('No se pudo revisar data.xlsx', err);
+  }
+}
+
 /* ---------- init ---------- */
 loadState();
+applyCurrentMonthHeader();
 render();
+checkHostedDataFile();
 </script>
 </body>
 </html>
