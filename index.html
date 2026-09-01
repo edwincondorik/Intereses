@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Libro de Intereses — Agosto 2026</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Intereses">
+<meta name="theme-color" content="#1C2B24">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231C2B24'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%23C9A15A' font-family='Georgia,serif'%3EBs%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#1C2B24;
+    --ink-soft:#2C4034;
+    --paper:#F7F2E7;
+    --paper-line:#E4DAC4;
+    --paper-card:#FFFDF8;
+    --gold:#B08D3F;
+    --gold-soft:#DDC48A;
+    --rust:#9C4B32;
+    --forest:#3F6650;
+    --ink-60:rgba(28,43,36,0.6);
+    --ink-40:rgba(28,43,36,0.4);
+    --shadow: 0 1px 2px rgba(28,43,36,0.08);
+    --radius: 14px;
+    --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100vh;
+    padding-bottom:96px;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--gold-soft);}
+
+  /* ---------- header / ledger cover ---------- */
+  header.cover{
+    background:linear-gradient(180deg,var(--ink) 0%,var(--ink-soft) 100%);
+    color:var(--paper);
+    padding:28px 20px 26px;
+    border-radius:0 0 22px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.cover::after{
+    content:"";
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 26px);
+    pointer-events:none;
+  }
+  .cover-eyebrow{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:14px;
+    color:var(--gold-soft);
+    margin:0 0 2px;
+    position:relative;
+  }
+  .cover-title{
+    font-family:var(--serif);
+    font-size:26px;
+    font-weight:600;
+    margin:0 0 18px;
+    letter-spacing:0.2px;
+    position:relative;
+  }
+  .cover-stats{
+    display:flex;
+    gap:10px;
+    position:relative;
+  }
+  .stat{
+    flex:1;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:12px;
+    padding:12px 10px;
+  }
+  .stat .n{
+    font-family:var(--serif);
+    font-size:19px;
+    font-weight:600;
+    line-height:1.1;
+    color:#fff;
+  }
+  .stat .n small{font-size:12px; font-weight:400; color:var(--gold-soft);}
+  .stat .lbl{
+    font-size:11px;
+    color:rgba(247,242,231,0.55);
+    margin-top:4px;
+  }
+
+  /* ---------- search / filter bar ---------- */
+  .toolbar{
+    display:flex;
+    gap:8px;
+    padding:16px 20px 4px;
+  }
+  .search-box{
+    flex:1;
+    display:flex;
+    align-items:center;
+    background:var(--paper-card);
+    border:1px solid var(--paper-line);
+    border-radius:12px;
+    padding:0 12px;
+    box-shadow:var(--shadow);
+  }
+  .search-box input{
+    border:none;
+    background:transparent;
+    padding:11px 6px;
+    font-size:15px;
+    width:100%;
+    outline:none;
+    font-family:var(--sans);
+    color:var(--ink);
+  }
+  .search-box svg{flex-shrink:0; opacity:0.45;}
+  select.sort-select{
+    border:1px solid var(--paper-line);
+    background:var(--paper-card);
+    border-radius:12px;
+    padding:0 10px;
+    font-size:13px;
+    color:var(--ink-60);
+    font-family:var(--sans);
+  }
+
+  /* ---------- filter chips ---------- */
+  .chips{
+    display:flex;
+    gap:8px;
+    padding:10px 20px 6px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex-shrink:0;
+    font-size:12.5px;
+    padding:6px 13px;
+    border-radius:100px;
+    border:1px solid var(--paper-line);
+    background:var(--paper-card);
+    color:var(--ink-60);
+    white-space:nowrap;
+  }
+  .chip.active{
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+  }
+
+  /* ---------- ledger list ---------- */
+  .ledger{
+    margin:12px 16px 0;
+    background:var(--paper-card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    border:1px solid var(--paper-line);
+  }
+  .day-group-label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:0.03em;
+    color:var(--ink-40);
+    padding:14px 16px 4px;
+    background:var(--paper-card);
+  }
+  .entry{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:13px 16px;
+    border-top:1px solid var(--paper-line);
+    cursor:pointer;
+    position:relative;
+  }
+  .day-group-label + .entry{border-top:none;}
+  .entry:active{background:#F1EADA;}
+  .entry .day-badge{
+    font-family:var(--serif);
+    font-size:14px;
+    color:var(--ink-40);
+    width:22px;
+    flex-shrink:0;
+    text-align:center;
+  }
+  .entry .main{flex:1; min-width:0;}
+  .entry .name{
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .entry .sub{
+    font-size:12.5px;
+    color:var(--ink-40);
+    margin-top:2px;
+  }
+  .entry .amounts{
+    text-align:right;
+    flex-shrink:0;
+  }
+  .entry .capital{
+    font-family:var(--mono);
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  .entry .interes{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--gold);
+    margin-top:2px;
+  }
+  .entry .status-dot{
+    width:7px;height:7px;border-radius:50%;
+    flex-shrink:0;
+    background:var(--gold-soft);
+  }
+  .entry .status-dot.pagado{background:var(--forest);}
+  .entry .status-dot.mora{background:var(--rust);}
+
+  .excel-wrap{
+    margin:12px 16px 0;
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid #C9C2AD;
+    box-shadow:var(--shadow);
+  }
+  table.excel-table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:var(--sans);
+  }
+  table.excel-table th{
+    background:#EDEAE0;
+    color:var(--ink);
+    font-size:11.5px;
+    font-weight:700;
+    text-align:center;
+    padding:8px 4px;
+    border-right:1px solid #D9D3C1;
+    border-bottom:1px solid #C9C2AD;
+  }
+  table.excel-table th:last-child{border-right:none;}
+  table.excel-table td{
+    font-size:12.5px;
+    padding:8px 6px;
+    border-right:1px solid #EDEAE0;
+    border-bottom:1px solid #EDEAE0;
+    color:var(--ink);
+  }
+  table.excel-table td:last-child{border-right:none;}
+  table.excel-table td.num{text-align:right; font-family:var(--mono); white-space:nowrap;}
+  table.excel-table td.center{text-align:center; color:var(--ink-40);}
+  table.excel-table tbody tr:last-child td{border-bottom:none;}
+  .excel-summary{
+    border-top:2px solid #C9C2AD;
+  }
+  .excel-summary table{width:100%; border-collapse:collapse;}
+  .excel-summary td{
+    padding:9px 12px;
+    font-size:12.5px;
+  }
+  .excel-summary td.lbl{
+    background:#EDEAE0;
+    text-align:right;
+    font-weight:700;
+    color:var(--ink);
+    width:60%;
+  }
+  .excel-summary td.val{
+    text-align:right;
+    font-weight:700;
+    color:var(--ink);
+    font-family:var(--mono);
+  }
+
+  .empty-state{
+    padding:48px 24px;
+    text-align:center;
+    color:var(--ink-40);
+  }
+  .empty-state .glyph{font-family:var(--serif); font-size:32px; color:var(--gold-soft); margin-bottom:8px;}
+  .empty-state p{font-size:14px; margin:0;}
+
+  /* ---------- FAB ---------- */
+  .fab{
+    position:fixed;
+    right:20px;
+    bottom:24px;
+    width:56px;height:56px;
+    border-radius:50%;
+    background:var(--ink);
+    color:var(--gold-soft);
+    border:none;
+    box-shadow:0 6px 18px rgba(28,43,36,0.35);
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px;
+    z-index:40;
+  }
+  .fab:active{transform:scale(0.94);}
+
+  .footer-actions{
+    display:flex;
+    gap:10px;
+    padding:18px 20px 8px;
+  }
+  .btn-ghost{
+    flex:1;
+    background:var(--paper-card);
+    border:1px solid var(--paper-line);
+    border-radius:12px;
+    padding:11px;
+    font-size:13px;
+    color:var(--ink-60);
+    font-family:var(--sans);
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .btn-ghost:active{background:#F1EADA;}
+
+  .install-hint{
+    margin:14px 20px 0;
+    padding:12px 14px;
+    border-radius:12px;
+    background:#EFE6D2;
+    border:1px solid var(--paper-line);
+    font-size:12.5px;
+    color:var(--ink-60);
+    display:none;
+    line-height:1.5;
+  }
+  .install-hint.show{display:block;}
+  .install-hint b{color:var(--ink);}
+
+  /* ---------- sheet / modal ---------- */
+  .sheet-backdrop{
+    position:fixed; inset:0;
+    background:rgba(28,43,36,0.45);
+    z-index:60;
+    display:none;
+  }
+  .sheet-backdrop.open{display:block;}
+  .sheet{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    background:var(--paper);
+    border-radius:20px 20px 0 0;
+    z-index:61;
+    max-height:88vh;
+    overflow-y:auto;
+    transform:translateY(100%);
+    transition:transform .28s cubic-bezier(.32,.72,0,1);
+    padding-bottom:env(safe-area-inset-bottom, 20px);
+  }
+  .sheet.open{transform:translateY(0);}
+  .sheet-handle{
+    width:36px;height:4px;border-radius:2px;
+    background:var(--paper-line);
+    margin:10px auto 4px;
+  }
+  .sheet-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 20px 4px;
+  }
+  .sheet-head h3{
+    font-family:var(--serif);
+    font-size:19px;
+    margin:0;
+    color:var(--ink);
+  }
+  .sheet-close{
+    border:none; background:none; font-size:22px; color:var(--ink-40);
+    padding:4px 8px;
+  }
+  .sheet-body{padding:12px 20px 8px;}
+
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-40);
+    margin-bottom:5px;
+    font-family:var(--sans);
+  }
+  .field input, .field select{
+    width:100%;
+    border:1px solid var(--paper-line);
+    background:var(--paper-card);
+    border-radius:10px;
+    padding:12px 12px;
+    font-size:15px;
+    font-family:var(--sans);
+    color:var(--ink);
+    outline:none;
+  }
+  .field input:focus, .field select:focus{border-color:var(--gold);}
+  .row2{display:flex; gap:10px;}
+  .row2 .field{flex:1;}
+
+  .tasa-row{
+    display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;
+  }
+  .tasa-chip{
+    font-size:12px;
+    padding:6px 11px;
+    border-radius:100px;
+    border:1px solid var(--paper-line);
+    background:var(--paper-card);
+    color:var(--ink-60);
+  }
+  .tasa-chip.active{background:var(--gold); color:#fff; border-color:var(--gold);}
+
+  .interes-preview{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--gold);
+    padding-top:2px;
+  }
+
+  .btn-primary{
+    width:100%;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    border-radius:12px;
+    padding:14px;
+    font-size:15px;
+    font-weight:600;
+    font-family:var(--sans);
+    margin-top:6px;
+  }
+  .btn-primary:active{opacity:0.85;}
+  .btn-danger{
+    width:100%;
+    background:transparent;
+    color:var(--rust);
+    border:1px solid var(--rust);
+    border-radius:12px;
+    padding:12px;
+    font-size:14px;
+    font-family:var(--sans);
+    margin-top:10px;
+  }
+
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0;
+  }
+  .toggle-row span{font-size:14px; color:var(--ink);}
+  .switch{
+    width:44px;height:26px;border-radius:100px;
+    background:var(--paper-line);
+    position:relative;
+    flex-shrink:0;
+  }
+  .switch.on{background:var(--forest);}
+  .switch::after{
+    content:"";
+    position:absolute; top:3px; left:3px;
+    width:20px;height:20px;border-radius:50%;
+    background:#fff;
+    transition:left .18s;
+    box-shadow:0 1px 3px rgba(0,0,0,0.25);
+  }
+  .switch.on::after{left:21px;}
+
+  .toast{
+    position:fixed;
+    left:50%; bottom:100px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:var(--paper);
+    padding:10px 18px;
+    border-radius:100px;
+    font-size:13px;
+    opacity:0;
+    pointer-events:none;
+    transition:all .25s;
+    z-index:80;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (min-width:640px){
+    body{max-width:520px; margin:0 auto; box-shadow:0 0 40px rgba(0,0,0,0.06);}
+    .sheet{max-width:520px; left:50%; transform:translate(-50%,100%);}
+    .sheet.open{transform:translate(-50%,0);}
+  }
+
+  #printArea{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{
+      display:block;
+      position:absolute; top:0; left:0; width:100%;
+      padding:20px;
+      background:#fff;
+    }
+    #printArea h2{font-family:Georgia,serif; text-align:center; margin:0 0 2px; font-size:20px;}
+    #printArea .print-sub{text-align:center; font-size:13px; color:#555; margin:0 0 16px;}
+    #printArea table{width:100%; border-collapse:collapse; font-family:Arial,sans-serif; font-size:12px;}
+    #printArea th{background:#EDEAE0; border:1px solid #999; padding:6px; text-align:center;}
+    #printArea td{border:1px solid #bbb; padding:6px;}
+    #printArea td.num{text-align:right;}
+    #printArea td.center{text-align:center;}
+    #printArea .print-summary{margin-top:14px; width:60%; margin-left:auto; font-family:Arial,sans-serif; font-size:12.5px;}
+    #printArea .print-summary td{border:1px solid #bbb; padding:7px;}
+    #printArea .print-summary td.lbl{background:#EDEAE0; font-weight:bold; text-align:right;}
+    #printArea .print-summary td.val{text-align:right; font-weight:bold;}
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <p class="cover-eyebrow">Cuadro de intereses</p>
+  <h1 class="cover-title">Agosto 2026</h1>
+  <div class="cover-stats">
+    <div class="stat">
+      <div class="n" id="statCount">—</div>
+      <div class="lbl">Préstamos</div>
+    </div>
+    <div class="stat">
+      <div class="n" id="statCapital">—</div>
+      <div class="lbl">Capital total</div>
+    </div>
+    <div class="stat">
+      <div class="n" id="statInteres">—</div>
+      <div class="lbl">Interés total</div>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="search-box">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="searchInput" type="text" placeholder="Buscar por nombre…">
+  </div>
+  <select id="sortSelect" class="sort-select">
+    <option value="fecha">Fecha</option>
+    <option value="nombre">Nombre</option>
+    <option value="capital">Capital</option>
+  </select>
+</div>
+
+<div class="chips">
+  <div class="chip active" data-filter="todos">Todos</div>
+  <div class="chip" data-filter="pendiente">Pendientes</div>
+  <div class="chip" data-filter="pagado">Pagados</div>
+  <div class="chip" data-filter="mora">Con mora</div>
+</div>
+
+<div id="searchSummary"></div>
+
+<div id="installHint" class="install-hint">
+  📲 Para usarla como app: abre el menú del navegador y elige <b>«Añadir a pantalla de inicio»</b>. Quedará con ícono propio y se abrirá sin barra de navegador — no requiere Google Play.
+</div>
+
+<div id="ledger" class="ledger"></div>
+
+<div class="footer-actions">
+  <button class="btn-ghost" id="importBtn">⬆ Cargar Excel</button>
+  <button class="btn-ghost" id="exportBtn">⬇ Exportar</button>
+</div>
+<div class="footer-actions" style="padding-top:0;">
+  <button class="btn-ghost" id="dedupeBtn">🧹 Quitar duplicados</button>
+  <button class="btn-ghost" id="clearAllBtn" style="color:var(--rust);">🗑 Borrar todo</button>
+</div>
+<div class="footer-actions" style="padding-top:0;">
+  <button class="btn-ghost" id="resetBtn">↺ Restaurar original</button>
+</div>
+<input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;">
+
+<button class="fab" id="fabAdd">+</button>
+
+<!-- Detail / edit sheet -->
+<div class="sheet-backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <h3 id="sheetTitle">Nuevo préstamo</h3>
+    <button class="sheet-close" id="sheetClose">✕</button>
+  </div>
+  <div class="sheet-body">
+    <div class="field">
+      <label>Nombre</label>
+      <input id="fNombre" type="text" placeholder="Nombre del cliente" list="nombresList">
+      <datalist id="nombresList"></datalist>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Día (agosto)</label>
+        <input id="fFecha" type="number" min="1" max="31" placeholder="1–31">
+      </div>
+      <div class="field">
+        <label>Capital (Bs.)</label>
+        <input id="fCapital" type="number" min="0" step="0.01" placeholder="0">
+      </div>
+    </div>
+    <div class="field">
+      <label>Tasa de interés</label>
+      <div class="tasa-row" id="tasaRow">
+        <div class="tasa-chip" data-r="7">7%</div>
+        <div class="tasa-chip" data-r="10">10%</div>
+        <div class="tasa-chip" data-r="15">15%</div>
+        <div class="tasa-chip" data-r="20">20%</div>
+        <div class="tasa-chip" data-r="custom">Manual</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Interés (Bs.)</label>
+      <input id="fInteres" type="number" min="0" step="0.01" placeholder="0">
+      <div class="interes-preview" id="interesPreview"></div>
+    </div>
+    <div class="toggle-row">
+      <span>Marcar como pagado</span>
+      <div class="switch" id="pagadoSwitch"></div>
+    </div>
+    <div class="field" id="fechaPagoField" style="display:none;">
+      <label>Fecha de pago</label>
+      <input id="fFechaPago" type="text" placeholder="dd/mm/aaaa">
+    </div>
+    <div class="field">
+      <label>Nota / mora</label>
+      <input id="fMora" type="text" placeholder="ej. 2 días de mora">
+    </div>
+    <button class="btn-primary" id="saveBtn">Guardar</button>
+    <button class="btn-danger" id="deleteBtn" style="display:none;">Eliminar préstamo</button>
+  </div>
+</div>
+
+<div class="sheet" id="importSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <h3>Cargar Excel</h3>
+    <button class="sheet-close" id="importSheetClose">✕</button>
+  </div>
+  <div class="sheet-body">
+    <p id="importSummary" style="font-size:14px;color:var(--ink-60);line-height:1.55;margin-top:0;"></p>
+    <button class="btn-primary" id="importAddBtn">Agregar a los existentes</button>
+    <button class="btn-ghost" id="importReplaceBtn" style="margin-top:10px;">Reemplazar todos los datos</button>
+    <button class="btn-ghost" id="importCancelBtn" style="margin-top:10px;color:var(--ink-40);">Cancelar</button>
+  </div>
+</div>
+
+<div id="printArea"></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const ORIGINAL_DATA = [{"nombre": "Adrian López", "fecha": 3, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 1}, {"nombre": "Nela", "fecha": 3, "capital": 7000, "interes": 490.0, "fechaPago": null, "mora": null, "id": 2}, {"nombre": "Nela", "fecha": 4, "capital": 55000, "interes": 3300, "fechaPago": null, "mora": null, "id": 3}, {"nombre": "Nela", "fecha": 4, "capital": 70000, "interes": 3500, "fechaPago": null, "mora": null, "id": 4}, {"nombre": "Nela", "fecha": 4, "capital": 15000, "interes": 262.5, "fechaPago": null, "mora": null, "id": 5}, {"nombre": "Patricia Condori", "fecha": 4, "capital": 2500, "interes": 200, "fechaPago": null, "mora": null, "id": 6}, {"nombre": "Patty - Su Clienta", "fecha": 4, "capital": 2500, "interes": 300, "fechaPago": null, "mora": null, "id": 7}, {"nombre": "Rubén Ticona - Amigo", "fecha": 5, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 8}, {"nombre": "Álvaro Flores", "fecha": 5, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 9}, {"nombre": "Patricia Condori", "fecha": 6, "capital": 32000, "interes": 1600, "fechaPago": null, "mora": null, "id": 10}, {"nombre": "Álvaro Flores", "fecha": 7, "capital": 8000, "interes": 1200, "fechaPago": null, "mora": null, "id": 11}, {"nombre": "Dra. Aleida", "fecha": 8, "capital": 25000, "interes": 3750, "fechaPago": null, "mora": null, "id": 12}, {"nombre": "Oscar Condori", "fecha": 9, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 13}, {"nombre": "Álvaro Flores", "fecha": 9, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 14}, {"nombre": "Oscar Condori", "fecha": 10, "capital": 7000, "interes": 1050, "fechaPago": null, "mora": null, "id": 15}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 16}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 17}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 18}, {"nombre": "Dra. Aleida", "fecha": 11, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 19}, {"nombre": "Dra. Aleida", "fecha": 11, "capital": 4000, "interes": 600, "fechaPago": null, "mora": null, "id": 20}, {"nombre": "Lizeth Pamela", "fecha": 11, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 21}, {"nombre": "Marilin", "fecha": 11, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 22}, {"nombre": "Nela", "fecha": 12, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 23}, {"nombre": "Dra. Aleida", "fecha": 12, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 24}, {"nombre": "Nieves Beyuma", "fecha": 13, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 25}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 57000, "interes": 7410, "fechaPago": null, "mora": null, "id": 26}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 27}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 7000, "interes": 1050, "fechaPago": null, "mora": null, "id": 28}, {"nombre": "Jeanette Layme", "fecha": 14, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 29}, {"nombre": "Jorge Flores", "fecha": 14, "capital": 1500, "interes": 225, "fechaPago": null, "mora": null, "id": 30}, {"nombre": "Nela", "fecha": 15, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 31}, {"nombre": "Nela", "fecha": 15, "capital": 7000, "interes": 420, "fechaPago": null, "mora": null, "id": 32}, {"nombre": "Jeanette Layme", "fecha": 15, "capital": 4500, "interes": 675, "fechaPago": null, "mora": null, "id": 33}, {"nombre": "Patricia Condori", "fecha": 15, "capital": 178400, "interes": 5352, "fechaPago": null, "mora": null, "id": 34}, {"nombre": "Nela", "fecha": 16, "capital": 11000, "interes": 770.0, "fechaPago": null, "mora": null, "id": 35}, {"nombre": "Oscar Condori", "fecha": 16, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 36}, {"nombre": "Heriberto", "fecha": 16, "capital": 3500, "interes": 175, "fechaPago": null, "mora": null, "id": 37}, {"nombre": "Rubén Ticona - Amigo", "fecha": 17, "capital": 13000, "interes": 1950, "fechaPago": null, "mora": null, "id": 38}, {"nombre": "Nela", "fecha": 18, "capital": 30000, "interes": 1800, "fechaPago": null, "mora": null, "id": 39}, {"nombre": "Jeanette Layme", "fecha": 18, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 40}, {"nombre": "Rubén Ticona - Amigo", "fecha": 18, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 41}, {"nombre": "Adrian López", "fecha": 19, "capital": 1500, "interes": 105.0, "fechaPago": null, "mora": null, "id": 42}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 170000, "interes": 25500, "fechaPago": null, "mora": null, "id": 43}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 30000, "interes": 4500, "fechaPago": null, "mora": null, "id": 44}, {"nombre": "Rubén Ticona - Amigo", "fecha": 21, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 45}, {"nombre": "Dra. Aleida", "fecha": 21, "capital": 55000, "interes": 7150, "fechaPago": null, "mora": null, "id": 46}, {"nombre": "Dra. Aleida", "fecha": 21, "capital": 7150, "interes": 1072.5, "fechaPago": null, "mora": null, "id": 47}, {"nombre": "Rubén Ticona - Amigo", "fecha": 22, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 48}, {"nombre": "Nela", "fecha": 23, "capital": 25000, "interes": 1500, "fechaPago": null, "mora": null, "id": 49}, {"nombre": "Marilin", "fecha": 23, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 50}, {"nombre": "Oscar Condori", "fecha": 24, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 51}, {"nombre": "Rubén Ticona - Amigo", "fecha": 24, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 52}, {"nombre": "Nela", "fecha": 24, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 53}, {"nombre": "Nieves Beyuma", "fecha": 24, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 54}, {"nombre": "Nela", "fecha": 24, "capital": 21000, "interes": 1470.0, "fechaPago": null, "mora": null, "id": 55}, {"nombre": "Nela", "fecha": 25, "capital": 100000, "interes": 5000, "fechaPago": null, "mora": null, "id": 56}, {"nombre": "Nela", "fecha": 26, "capital": 8000, "interes": 560, "fechaPago": null, "mora": null, "id": 57}, {"nombre": "Heriberto", "fecha": 26, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 58}, {"nombre": "Rubén Ticona - Amigo", "fecha": 27, "capital": 19000, "interes": 2850, "fechaPago": null, "mora": null, "id": 59}, {"nombre": "Hotel Rey Palace", "fecha": 28, "capital": 90000, "interes": 13500, "fechaPago": null, "mora": null, "id": 60}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 45000, "interes": 6750, "fechaPago": null, "mora": null, "id": 61}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 6750, "interes": 1012.5, "fechaPago": null, "mora": null, "id": 62}, {"nombre": "Richard y Andrea", "fecha": 28, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 63}, {"nombre": "Álvaro Flores", "fecha": 29, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 64}, {"nombre": "Vicky", "fecha": 29, "capital": 4000, "interes": 600, "fechaPago": null, "mora": null, "id": 65}, {"nombre": "Wilson Guzmán", "fecha": 30, "capital": 115000, "interes": 5750, "fechaPago": null, "mora": null, "id": 66}];
+const STORAGE_KEY = 'libroIntereses_agosto2026_v1';
+
+let state = { loans: [], editingId: null, filter: 'todos', sort: 'fecha' };
+let currentSearchQuery = '';
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{ state.loans = JSON.parse(raw); return; }catch(e){}
+  }
+  state.loans = JSON.parse(JSON.stringify(ORIGINAL_DATA));
+  persist();
+}
+function persist(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.loans));
+}
+function fmtBs(n){
+  return 'Bs. ' + Number(n||0).toLocaleString('es-BO', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtBsShort(n){
+  const v = Number(n||0);
+  if(v >= 1000000) return (v/1000000).toFixed(2)+'M';
+  if(v >= 1000) return (v/1000).toFixed(1)+'k';
+  return v.toFixed(0);
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function renderStats(list){
+  const count = list.length;
+  const capital = list.reduce((a,l)=>a+Number(l.capital||0),0);
+  const interes = list.reduce((a,l)=>a+Number(l.interes||0),0);
+  document.getElementById('statCount').textContent = count;
+  document.getElementById('statCapital').innerHTML = fmtBsShort(capital) + ' <small>Bs.</small>';
+  document.getElementById('statInteres').innerHTML = fmtBsShort(interes) + ' <small>Bs.</small>';
+}
+
+function fmtBsExcel(n){
+  const v = new Intl.NumberFormat('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}).format(Number(n||0));
+  return 'Bs. ' + v;
+}
+
+function renderExcelView(list){
+  const wrap = document.getElementById('searchSummary');
+  const capital = list.reduce((a,l)=>a+Number(l.capital||0),0);
+  const interes = list.reduce((a,l)=>a+Number(l.interes||0),0);
+
+  if(list.length===0){
+    wrap.innerHTML = '<div class="excel-wrap"><div class="empty-state"><div class="glyph">§</div><p>No hay préstamos que coincidan.</p></div></div>';
+    return;
+  }
+
+  let rows = '';
+  list.forEach((l,i)=>{
+    rows += `<tr data-id="${l.id}" style="cursor:pointer;">
+      <td class="center">${i+1}</td>
+      <td>${escapeHtml(l.nombre||'')}</td>
+      <td class="center">${l.fecha!=null ? l.fecha : ''}</td>
+      <td class="num">${fmtBsExcel(l.capital)}</td>
+      <td class="num">${fmtBsExcel(l.interes)}</td>
+    </tr>`;
+  });
+
+  wrap.innerHTML = `
+    <div class="excel-wrap">
+      <table class="excel-table">
+        <thead><tr>
+          <th>Nº</th><th>Nombre</th><th>Fecha</th><th>Capital</th><th>Interés</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="excel-summary">
+        <table>
+          <tr><td class="lbl">Nro. De Préstamos</td><td class="val">${list.length}</td></tr>
+          <tr><td class="lbl">Total Capital</td><td class="val">${fmtBsExcel(capital)}</td></tr>
+          <tr><td class="lbl">Total Interés</td><td class="val">${fmtBsExcel(interes)}</td></tr>
+        </table>
+      </div>
+      <div style="padding:12px 14px;">
+        <button class="btn-ghost" id="pdfBtn" style="width:100%;">📄 Exportar este filtro a PDF</button>
+      </div>
+    </div>
+  `;
+  wrap.querySelectorAll('table.excel-table tbody tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>openSheet(parseInt(tr.dataset.id)));
+  });
+  document.getElementById('pdfBtn').addEventListener('click', ()=>exportFilteredPDF(list, currentSearchQuery));
+}
+
+function exportFilteredPDF(list, query){
+  const capital = list.reduce((a,l)=>a+Number(l.capital||0),0);
+  const interes = list.reduce((a,l)=>a+Number(l.interes||0),0);
+  let rows = '';
+  list.forEach((l,i)=>{
+    rows += `<tr>
+      <td class="center">${i+1}</td>
+      <td>${escapeHtml(l.nombre||'')}</td>
+      <td class="center">${l.fecha!=null ? l.fecha : ''}</td>
+      <td class="num">${fmtBsExcel(l.capital)}</td>
+      <td class="num">${fmtBsExcel(l.interes)}</td>
+    </tr>`;
+  });
+  document.getElementById('printArea').innerHTML = `
+    <h2>CUADRO DE INTERESES</h2>
+    <p class="print-sub">AGOSTO 2026 · Filtro: "${escapeHtml(query)}"</p>
+    <table>
+      <thead><tr><th>Nº</th><th>Nombre</th><th>Fecha</th><th>Capital</th><th>Interés</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <table class="print-summary">
+      <tr><td class="lbl">Nro. De Préstamos</td><td class="val">${list.length}</td></tr>
+      <tr><td class="lbl">Total Capital</td><td class="val">${fmtBsExcel(capital)}</td></tr>
+      <tr><td class="lbl">Total Interés</td><td class="val">${fmtBsExcel(interes)}</td></tr>
+    </table>
+  `;
+  setTimeout(()=>window.print(), 80);
+}
+
+function matchesFilter(l){
+  if(state.filter==='pendiente') return !l.fechaPago;
+  if(state.filter==='pagado') return !!l.fechaPago;
+  if(state.filter==='mora') return !!(l.mora && String(l.mora).trim());
+  return true;
+}
+
+function getFilteredSorted(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = state.loans.filter(l => matchesFilter(l) && (!q || (l.nombre||'').toLowerCase().includes(q)));
+  if(state.sort==='fecha') list.sort((a,b)=>(a.fecha||0)-(b.fecha||0) || a.id-b.id);
+  if(state.sort==='nombre') list.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
+  if(state.sort==='capital') list.sort((a,b)=>(b.capital||0)-(a.capital||0));
+  return list;
+}
+
+function render(){
+  const list = getFilteredSorted();
+  const query = document.getElementById('searchInput').value.trim();
+  currentSearchQuery = query;
+  renderStats(state.filter==='todos' && !query ? state.loans : list);
+  const ledger = document.getElementById('ledger');
+
+  if(query){
+    ledger.style.display = 'none';
+    ledger.innerHTML = '';
+    renderExcelView(list);
+    return;
+  }
+  document.getElementById('searchSummary').innerHTML = '';
+  ledger.style.display = '';
+  ledger.innerHTML = '';
+
+  if(list.length===0){
+    ledger.innerHTML = '<div class="empty-state"><div class="glyph">§</div><p>No hay préstamos que coincidan.</p></div>';
+    return;
+  }
+
+  let lastDay = null;
+  list.forEach(l=>{
+    if(state.sort==='fecha' && l.fecha !== lastDay){
+      lastDay = l.fecha;
+      const lbl = document.createElement('div');
+      lbl.className = 'day-group-label';
+      lbl.textContent = 'DÍA ' + String(l.fecha).padStart(2,'0') + ' · AGOSTO';
+      ledger.appendChild(lbl);
+    }
+    const row = document.createElement('div');
+    row.className = 'entry';
+    row.dataset.id = l.id;
+    const pagado = !!l.fechaPago;
+    const mora = !!(l.mora && String(l.mora).trim());
+    let dotClass = 'status-dot';
+    if(mora) dotClass += ' mora'; else if(pagado) dotClass += ' pagado';
+    row.innerHTML = `
+      <div class="day-badge">${l.fecha!=null ? String(l.fecha).padStart(2,'0') : '—'}</div>
+      <div class="main">
+        <div class="name">${escapeHtml(l.nombre||'(sin nombre)')}</div>
+        <div class="sub">${pagado ? 'Pagado · '+escapeHtml(l.fechaPago) : (mora ? 'Mora: '+escapeHtml(l.mora) : 'Pendiente')}</div>
+      </div>
+      <div class="${dotClass}"></div>
+      <div class="amounts">
+        <div class="capital">${fmtBsShort(l.capital)}</div>
+        <div class="interes">+${fmtBsShort(l.interes)}</div>
+      </div>
+    `;
+    row.addEventListener('click', ()=>openSheet(l.id));
+    ledger.appendChild(row);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- sheet logic ---------- */
+const backdrop = document.getElementById('backdrop');
+const sheet = document.getElementById('sheet');
+
+function openSheet(id){
+  state.editingId = id ?? null;
+  const l = id ? state.loans.find(x=>x.id===id) : null;
+  document.getElementById('sheetTitle').textContent = l ? 'Editar préstamo' : 'Nuevo préstamo';
+  document.getElementById('deleteBtn').style.display = l ? 'block' : 'none';
+  document.getElementById('fNombre').value = l ? l.nombre : '';
+  document.getElementById('fFecha').value = l ? l.fecha : '';
+  document.getElementById('fCapital').value = l ? l.capital : '';
+  document.getElementById('fInteres').value = l ? l.interes : '';
+  document.getElementById('fMora').value = l && l.mora ? l.mora : '';
+  document.getElementById('fFechaPago').value = l && l.fechaPago ? l.fechaPago : '';
+  const isPagado = !!(l && l.fechaPago);
+  document.getElementById('pagadoSwitch').classList.toggle('on', isPagado);
+  document.getElementById('fechaPagoField').style.display = isPagado ? 'block' : 'none';
+  document.querySelectorAll('.tasa-chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('interesPreview').textContent = '';
+
+  // populate name suggestions
+  const names = [...new Set(state.loans.map(x=>x.nombre).filter(Boolean))].sort();
+  document.getElementById('nombresList').innerHTML = names.map(n=>`<option value="${escapeHtml(n)}">`).join('');
+
+  backdrop.classList.add('open');
+  sheet.classList.add('open');
+}
+function closeSheet(){
+  backdrop.classList.remove('open');
+  sheet.classList.remove('open');
+}
+document.getElementById('backdrop').addEventListener('click', closeSheet);
+document.getElementById('sheetClose').addEventListener('click', closeSheet);
+document.getElementById('fabAdd').addEventListener('click', ()=>openSheet(null));
+
+document.getElementById('pagadoSwitch').addEventListener('click', function(){
+  this.classList.toggle('on');
+  document.getElementById('fechaPagoField').style.display = this.classList.contains('on') ? 'block' : 'none';
+});
+
+document.getElementById('tasaRow').addEventListener('click', (e)=>{
+  const chip = e.target.closest('.tasa-chip');
+  if(!chip) return;
+  document.querySelectorAll('.tasa-chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  const r = chip.dataset.r;
+  const capital = parseFloat(document.getElementById('fCapital').value)||0;
+  if(r==='custom'){
+    document.getElementById('interesPreview').textContent = 'Ingresa el interés manualmente.';
+    document.getElementById('fInteres').focus();
+    return;
+  }
+  const pct = parseFloat(r);
+  const val = +(capital * pct/100).toFixed(2);
+  document.getElementById('fInteres').value = val;
+  document.getElementById('interesPreview').textContent = `${pct}% de ${fmtBs(capital)} = ${fmtBs(val)}`;
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const nombre = document.getElementById('fNombre').value.trim();
+  const fecha = parseInt(document.getElementById('fFecha').value)||null;
+  const capital = parseFloat(document.getElementById('fCapital').value)||0;
+  const interes = parseFloat(document.getElementById('fInteres').value)||0;
+  const mora = document.getElementById('fMora').value.trim();
+  const pagado = document.getElementById('pagadoSwitch').classList.contains('on');
+  const fechaPago = pagado ? document.getElementById('fFechaPago').value.trim() : null;
+
+  if(!nombre){ toast('Escribe un nombre'); return; }
+  if(!capital){ toast('Ingresa el capital'); return; }
+
+  if(state.editingId){
+    const l = state.loans.find(x=>x.id===state.editingId);
+    Object.assign(l, {nombre, fecha, capital, interes, mora: mora||null, fechaPago: fechaPago||null});
+    toast('Préstamo actualizado');
+  } else {
+    const newId = Math.max(0, ...state.loans.map(x=>x.id)) + 1;
+    state.loans.push({id:newId, nombre, fecha, capital, interes, mora: mora||null, fechaPago: fechaPago||null});
+    toast('Préstamo agregado');
+  }
+  persist();
+  closeSheet();
+  render();
+});
+
+document.getElementById('deleteBtn').addEventListener('click', ()=>{
+  if(!state.editingId) return;
+  if(!confirm('¿Eliminar este préstamo?')) return;
+  state.loans = state.loans.filter(x=>x.id!==state.editingId);
+  persist();
+  closeSheet();
+  render();
+  toast('Préstamo eliminado');
+});
+
+/* ---------- filters / search / sort ---------- */
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    state.filter = chip.dataset.filter;
+    render();
+  });
+});
+document.getElementById('searchInput').addEventListener('input', render);
+document.getElementById('sortSelect').addEventListener('change', (e)=>{
+  state.sort = e.target.value;
+  render();
+});
+
+/* ---------- export / reset ---------- */
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const rows = [['Nº','Nombre','Fecha','Capital','Interés','Fecha de pago','Aumento por mora']];
+  state.loans
+    .slice()
+    .sort((a,b)=>(a.fecha||0)-(b.fecha||0) || a.id-b.id)
+    .forEach((l,i)=>{
+      rows.push([i+1, l.nombre, l.fecha, l.capital, l.interes, l.fechaPago||'', l.mora||'']);
+    });
+  const totalCapital = state.loans.reduce((a,l)=>a+Number(l.capital||0),0);
+  const totalInteres = state.loans.reduce((a,l)=>a+Number(l.interes||0),0);
+  rows.push(['TOTALES','','',totalCapital,totalInteres,'','']);
+  rows.push([]);
+  rows.push(['','','Nro. de Préstamos','',state.loans.length]);
+  rows.push(['','','Total Capital','',totalCapital]);
+  rows.push(['','','Total Interés','',totalInteres]);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:5},{wch:22},{wch:8},{wch:12},{wch:12},{wch:14},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Real');
+  XLSX.writeFile(wb, 'Cuadro_Intereses_Agosto_2026.xlsx');
+  toast('Excel exportado');
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Esto reemplazará tus cambios con los 66 préstamos originales del archivo. ¿Continuar?')) return;
+  state.loans = JSON.parse(JSON.stringify(ORIGINAL_DATA));
+  persist();
+  render();
+  toast('Datos originales restaurados');
+});
+
+function loanKey(l){
+  return [
+    String(l.nombre||'').trim().toLowerCase(),
+    l.fecha,
+    Number(l.capital||0).toFixed(2),
+    Number(l.interes||0).toFixed(2)
+  ].join('|');
+}
+
+function dedupeLoans(list){
+  const seen = new Set();
+  const clean = [];
+  let removed = 0;
+  list.forEach(l=>{
+    const k = loanKey(l);
+    if(seen.has(k)){ removed++; return; }
+    seen.add(k);
+    clean.push(l);
+  });
+  return {clean, removed};
+}
+
+document.getElementById('clearAllBtn').addEventListener('click', ()=>{
+  if(state.loans.length===0){ toast('Ya está vacío'); return; }
+  if(!confirm(`Esto borrará los ${state.loans.length} préstamos actuales de la app (no afecta tu archivo Excel original). ¿Continuar?`)) return;
+  state.loans = [];
+  persist();
+  document.getElementById('searchInput').value = '';
+  render();
+  toast('Lista vaciada — ya puedes cargar tu archivo');
+});
+
+document.getElementById('dedupeBtn').addEventListener('click', ()=>{
+  const {clean, removed} = dedupeLoans(state.loans);
+  if(removed===0){ toast('No se encontraron duplicados'); return; }
+  state.loans = clean;
+  persist();
+  render();
+  toast(`${removed} duplicado(s) eliminados`);
+});
+
+let pendingImport = [];
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try{
+      const wb = XLSX.read(new Uint8Array(evt.target.result), {type:'array', cellDates:true});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:null});
+      const parsed = parseLoanRows(rows);
+      if(parsed.length === 0){
+        toast('No se encontraron préstamos en el archivo');
+        return;
+      }
+      pendingImport = parsed;
+      const existingKeys = new Set(state.loans.map(loanKey));
+      const wouldDuplicate = parsed.filter(l=>existingKeys.has(loanKey(l))).length;
+      document.getElementById('importSummary').innerHTML =
+        `Se encontraron <b>${parsed.length}</b> préstamos en el archivo.` +
+        (wouldDuplicate>0 ? `<br><br>⚠️ <b>${wouldDuplicate}</b> ya existen en tu lista actual (mismo nombre, día, capital e interés). Si eliges "Agregar", esos se omitirán automáticamente para evitar duplicados.` : '<br><br>Ninguno coincide con préstamos que ya tienes.');
+      backdrop.classList.add('open');
+      document.getElementById('importSheet').classList.add('open');
+    }catch(err){
+      console.error(err);
+      toast('No se pudo leer el archivo');
+    }
+    document.getElementById('fileInput').value = '';
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function closeImportSheet(){
+  backdrop.classList.remove('open');
+  document.getElementById('importSheet').classList.remove('open');
+}
+document.getElementById('importSheetClose').addEventListener('click', closeImportSheet);
+document.getElementById('importCancelBtn').addEventListener('click', closeImportSheet);
+
+document.getElementById('importAddBtn').addEventListener('click', ()=>{
+  const existingKeys = new Set(state.loans.map(loanKey));
+  let nextId = Math.max(0, ...state.loans.map(x=>x.id)) + 1;
+  let added = 0, skipped = 0;
+  pendingImport.forEach(l=>{
+    const k = loanKey(l);
+    if(existingKeys.has(k)){ skipped++; return; }
+    existingKeys.add(k);
+    l.id = nextId++;
+    state.loans.push(l);
+    added++;
+  });
+  persist();
+  closeImportSheet();
+  render();
+  toast(skipped>0 ? `${added} agregados · ${skipped} duplicados omitidos` : `${added} préstamos agregados`);
+});
+
+document.getElementById('importReplaceBtn').addEventListener('click', ()=>{
+  if(!confirm(`Vas a reemplazar TODOS tus datos actuales (${state.loans.length}) por los ${pendingImport.length} del archivo. Esto no se puede deshacer. ¿Continuar?`)) return;
+  state.loans = pendingImport;
+  persist();
+  closeImportSheet();
+  document.getElementById('searchInput').value = '';
+  render();
+  toast('Datos reemplazados');
+});
+
+function normalizeHeader(s){
+  return String(s||'').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+function excelDateToStr(v){
+  if(v instanceof Date){
+    const d = String(v.getDate()).padStart(2,'0');
+    const m = String(v.getMonth()+1).padStart(2,'0');
+    return `${d}/${m}/${v.getFullYear()}`;
+  }
+  return v==null ? null : String(v).trim() || null;
+}
+
+function parseLoanRows(rows){
+  // find header row containing 'Nombre'
+  let headerIdx = -1, cols = {};
+  for(let i=0;i<rows.length;i++){
+    const row = rows[i] || [];
+    const norm = row.map(normalizeHeader);
+    const nombreIdx = norm.findIndex(c=>c==='nombre');
+    if(nombreIdx !== -1){
+      headerIdx = i;
+      norm.forEach((c,idx)=>{
+        if(c==='nombre') cols.nombre = idx;
+        else if(c==='fecha') cols.fecha = idx;
+        else if(c==='capital') cols.capital = idx;
+        else if(c.startsWith('interes')) cols.interes = idx;
+        else if(c.includes('fecha de pago')) cols.fechaPago = idx;
+        else if(c.includes('mora')) cols.mora = idx;
+      });
+      break;
+    }
+  }
+  if(headerIdx === -1) return [];
+
+  const out = [];
+  let id = 1;
+  for(let i=headerIdx+1;i<rows.length;i++){
+    const row = rows[i] || [];
+    const nombre = row[cols.nombre];
+    if(nombre == null || String(nombre).trim()==='') continue;
+    if(String(nombre).trim().toUpperCase()==='TOTALES') break;
+    const capital = parseFloat(row[cols.capital]) || 0;
+    const interes = parseFloat(row[cols.interes]) || 0;
+    let fecha = row[cols.fecha];
+    if(fecha instanceof Date) fecha = fecha.getDate();
+    else fecha = parseInt(fecha) || null;
+    out.push({
+      id: id++,
+      nombre: String(nombre).trim(),
+      fecha,
+      capital,
+      interes,
+      fechaPago: cols.fechaPago!=null ? excelDateToStr(row[cols.fechaPago]) : null,
+      mora: cols.mora!=null && row[cols.mora] ? String(row[cols.mora]).trim() : null
+    });
+  }
+  return out;
+}
+
+/* ---------- install hint (show once on mobile, not standalone) ---------- */
+(function(){
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+  if(isMobile && !isStandalone && !localStorage.getItem('installHintDismissed')){
+    document.getElementById('installHint').classList.add('show');
+  }
+})();
+document.getElementById('installHint').addEventListener('click', function(){
+  this.classList.remove('show');
+  localStorage.setItem('installHintDismissed','1');
+});
+
+/* ---------- init ---------- */
+loadState();
+render();
+</script>
+</body>
+</html>
