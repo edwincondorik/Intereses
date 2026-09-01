@@ -620,6 +620,7 @@
   <button class="btn-ghost" id="clearAllBtn" style="color:var(--rust);">🗑 Borrar todo</button>
 </div>
 <div class="footer-actions" style="padding-top:0;">
+  <button class="btn-ghost" id="ghSyncOpenBtn">☁️ Sincronizar a GitHub</button>
   <button class="btn-ghost" id="resetBtn">↺ Restaurar original</button>
 </div>
 <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;">
@@ -679,6 +680,36 @@
     </div>
     <button class="btn-primary" id="saveBtn">Guardar</button>
     <button class="btn-danger" id="deleteBtn" style="display:none;">Eliminar préstamo</button>
+  </div>
+</div>
+
+<div class="sheet" id="githubSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-head">
+    <h3>Sincronizar a GitHub</h3>
+    <button class="sheet-close" id="githubSheetClose">✕</button>
+  </div>
+  <div class="sheet-body">
+    <p style="font-size:13px;color:var(--ink-60);line-height:1.5;margin-top:0;">
+      Sube tus datos actuales como <code>data.xlsx</code> a tu repositorio. Tu token se guarda solo en este celular, nunca en el código de la app.
+    </p>
+    <div class="field">
+      <label>Usuario / organización</label>
+      <input id="ghOwner" type="text" placeholder="edwincondorik">
+    </div>
+    <div class="field">
+      <label>Repositorio</label>
+      <input id="ghRepo" type="text" placeholder="Intereses">
+    </div>
+    <div class="field">
+      <label>Nombre del archivo</label>
+      <input id="ghPath" type="text" placeholder="data.xlsx">
+    </div>
+    <div class="field">
+      <label>Token de acceso personal</label>
+      <input id="ghToken" type="password" placeholder="ghp_… (solo permiso de escritura en este repo)">
+    </div>
+    <button class="btn-primary" id="ghSyncBtn">☁️ Guardar y sincronizar</button>
   </div>
 </div>
 
@@ -1059,7 +1090,7 @@ document.getElementById('sortSelect').addEventListener('change', (e)=>{
 });
 
 /* ---------- export / reset ---------- */
-document.getElementById('exportBtn').addEventListener('click', ()=>{
+function buildWorkbook(){
   const rows = [['Nº','Nombre','Fecha','Capital','Interés','Fecha de pago','Aumento por mora']];
   state.loans
     .slice()
@@ -1079,9 +1110,90 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   ws['!cols'] = [{wch:5},{wch:22},{wch:8},{wch:12},{wch:12},{wch:14},{wch:16}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Real');
+  return wb;
+}
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const wb = buildWorkbook();
   const fileLabel = currentMonthYearEs().replace(' ', '_');
   XLSX.writeFile(wb, `Cuadro_Intereses_${fileLabel}.xlsx`);
   toast('Excel exportado');
+});
+
+document.getElementById('ghSyncOpenBtn').addEventListener('click', ()=>{
+  document.getElementById('ghOwner').value = localStorage.getItem('gh_owner') || 'edwincondorik';
+  document.getElementById('ghRepo').value = localStorage.getItem('gh_repo') || 'Intereses';
+  document.getElementById('ghPath').value = localStorage.getItem('gh_path') || 'data.xlsx';
+  document.getElementById('ghToken').value = localStorage.getItem('gh_token') || '';
+  backdrop.classList.add('open');
+  document.getElementById('githubSheet').classList.add('open');
+});
+function closeGithubSheet(){
+  backdrop.classList.remove('open');
+  document.getElementById('githubSheet').classList.remove('open');
+}
+document.getElementById('githubSheetClose').addEventListener('click', closeGithubSheet);
+
+document.getElementById('ghSyncBtn').addEventListener('click', async ()=>{
+  const token = document.getElementById('ghToken').value.trim();
+  const owner = document.getElementById('ghOwner').value.trim();
+  const repo = document.getElementById('ghRepo').value.trim();
+  const path = document.getElementById('ghPath').value.trim() || 'data.xlsx';
+  if(!token || !owner || !repo){ toast('Completa usuario, repositorio y token'); return; }
+
+  localStorage.setItem('gh_owner', owner);
+  localStorage.setItem('gh_repo', repo);
+  localStorage.setItem('gh_path', path);
+  localStorage.setItem('gh_token', token);
+
+  const btn = document.getElementById('ghSyncBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Sincronizando…';
+
+  try{
+    const wb = buildWorkbook();
+    const base64 = XLSX.write(wb, {bookType:'xlsx', type:'base64'});
+    const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path}`;
+    const headers = {
+      'Authorization': 'token ' + token,
+      'Accept': 'application/vnd.github+json'
+    };
+
+    let sha = null;
+    const getRes = await fetch(apiUrl, {headers});
+    if(getRes.ok){
+      const info = await getRes.json();
+      sha = info.sha;
+    } else if(getRes.status !== 404){
+      throw new Error('No se pudo verificar el archivo (código ' + getRes.status + ')');
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {...headers, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        message: 'Actualización desde la app — ' + new Date().toLocaleString('es-BO'),
+        content: base64,
+        sha: sha || undefined
+      })
+    });
+
+    if(!putRes.ok){
+      const errBody = await putRes.text();
+      throw new Error('GitHub respondió ' + putRes.status + ': ' + errBody.slice(0,150));
+    }
+
+    localStorage.setItem('dataxlsx_fingerprint', loanListFingerprint(state.loans));
+    toast('✅ Sincronizado con GitHub');
+    closeGithubSheet();
+  }catch(err){
+    console.error(err);
+    toast('❌ No se pudo sincronizar — revisa el token o el repositorio');
+  }finally{
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 });
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
