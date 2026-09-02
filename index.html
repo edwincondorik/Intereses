@@ -265,6 +265,7 @@
     color:var(--ink);
   }
   table.excel-table td:last-child{border-right:none;}
+  table.excel-table tr.resaltado td{background:#FCE8CE;}
   table.excel-table td.num{text-align:right; font-family:var(--mono); white-space:nowrap;}
   table.excel-table td.center{text-align:center; color:var(--ink-40);}
   table.excel-table tbody tr:last-child td{border-bottom:none;}
@@ -289,6 +290,12 @@
     color:var(--ink);
     font-family:var(--mono);
   }
+
+  .entry.resaltado{
+    background:#FCE8CE;
+    border-left:4px solid #E8952E;
+  }
+  .entry.resaltado:active{background:#F8DCB0;}
 
   .empty-state{
     padding:48px 24px;
@@ -469,6 +476,7 @@
     flex-shrink:0;
   }
   .switch.on{background:var(--forest);}
+  .switch.on.naranja{background:#E8952E;}
   .switch::after{
     content:"";
     position:absolute; top:3px; left:3px;
@@ -556,6 +564,7 @@
     #printArea td{border:1px solid #bbb; padding:6px;}
     #printArea td.num{text-align:right;}
     #printArea td.center{text-align:center;}
+    #printArea tr.resaltado td{background:#FCE8CE;}
     #printArea .print-summary{margin-top:14px; width:60%; margin-left:auto; font-family:Arial,sans-serif; font-size:12.5px;}
     #printArea .print-summary td{border:1px solid #bbb; padding:7px;}
     #printArea .print-summary td.lbl{background:#EDEAE0; font-weight:bold; text-align:right;}
@@ -620,7 +629,6 @@
   <button class="btn-ghost" id="clearAllBtn" style="color:var(--rust);">🗑 Borrar todo</button>
 </div>
 <div class="footer-actions" style="padding-top:0;">
-  <button class="btn-ghost" id="ghSyncOpenBtn">☁️ Sincronizar a GitHub</button>
   <button class="btn-ghost" id="resetBtn">↺ Restaurar original</button>
 </div>
 <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none;">
@@ -670,6 +678,10 @@
       <span>Marcar como pagado</span>
       <div class="switch" id="pagadoSwitch"></div>
     </div>
+    <div class="toggle-row">
+      <span>🟠 Resaltar en naranja (como en Excel)</span>
+      <div class="switch" id="resaltadoSwitch"></div>
+    </div>
     <div class="field" id="fechaPagoField" style="display:none;">
       <label>Fecha de pago</label>
       <input id="fFechaPago" type="text" placeholder="dd/mm/aaaa">
@@ -683,38 +695,8 @@
   </div>
 </div>
 
-<div class="sheet" id="githubSheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-head">
-    <h3>Sincronizar a GitHub</h3>
-    <button class="sheet-close" id="githubSheetClose">✕</button>
-  </div>
-  <div class="sheet-body">
-    <p style="font-size:13px;color:var(--ink-60);line-height:1.5;margin-top:0;">
-      Sube tus datos actuales como <code>data.xlsx</code> a tu repositorio. Tu token se guarda solo en este celular, nunca en el código de la app.
-    </p>
-    <div class="field">
-      <label>Usuario / organización</label>
-      <input id="ghOwner" type="text" placeholder="edwincondorik">
-    </div>
-    <div class="field">
-      <label>Repositorio</label>
-      <input id="ghRepo" type="text" placeholder="Intereses">
-    </div>
-    <div class="field">
-      <label>Nombre del archivo</label>
-      <input id="ghPath" type="text" placeholder="data.xlsx">
-    </div>
-    <div class="field">
-      <label>Token de acceso personal</label>
-      <input id="ghToken" type="password" placeholder="ghp_… (solo permiso de escritura en este repo)">
-    </div>
-    <button class="btn-primary" id="ghSyncBtn">☁️ Guardar y sincronizar</button>
-  </div>
-</div>
-
 <div class="sheet" id="importSheet">
-  <div class="sheet-handle"></div>
+  <div class="sheet-handle">
   <div class="sheet-head">
     <h3>Cargar Excel</h3>
     <button class="sheet-close" id="importSheetClose">✕</button>
@@ -742,7 +724,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-const ORIGINAL_DATA = [{"nombre": "Adrian López", "fecha": 3, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 1}, {"nombre": "Nela", "fecha": 3, "capital": 7000, "interes": 490.0, "fechaPago": null, "mora": null, "id": 2}, {"nombre": "Nela", "fecha": 4, "capital": 55000, "interes": 3300, "fechaPago": null, "mora": null, "id": 3}, {"nombre": "Nela", "fecha": 4, "capital": 70000, "interes": 3500, "fechaPago": null, "mora": null, "id": 4}, {"nombre": "Nela", "fecha": 4, "capital": 15000, "interes": 262.5, "fechaPago": null, "mora": null, "id": 5}, {"nombre": "Patricia Condori", "fecha": 4, "capital": 2500, "interes": 200, "fechaPago": null, "mora": null, "id": 6}, {"nombre": "Patty - Su Clienta", "fecha": 4, "capital": 2500, "interes": 300, "fechaPago": null, "mora": null, "id": 7}, {"nombre": "Rubén Ticona - Amigo", "fecha": 5, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 8}, {"nombre": "Álvaro Flores", "fecha": 5, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 9}, {"nombre": "Patricia Condori", "fecha": 6, "capital": 32000, "interes": 1600, "fechaPago": null, "mora": null, "id": 10}, {"nombre": "Álvaro Flores", "fecha": 7, "capital": 8000, "interes": 1200, "fechaPago": null, "mora": null, "id": 11}, {"nombre": "Dra. Aleida", "fecha": 8, "capital": 25000, "interes": 3750, "fechaPago": null, "mora": null, "id": 12}, {"nombre": "Oscar Condori", "fecha": 9, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 13}, {"nombre": "Álvaro Flores", "fecha": 9, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 14}, {"nombre": "Oscar Condori", "fecha": 10, "capital": 7000, "interes": 1050, "fechaPago": null, "mora": null, "id": 15}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 16}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 17}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 18}, {"nombre": "Dra. Aleida", "fecha": 11, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 19}, {"nombre": "Dra. Aleida", "fecha": 11, "capital": 4000, "interes": 600, "fechaPago": null, "mora": null, "id": 20}, {"nombre": "Lizeth Pamela", "fecha": 11, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 21}, {"nombre": "Marilin", "fecha": 11, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 22}, {"nombre": "Nela", "fecha": 12, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 23}, {"nombre": "Dra. Aleida", "fecha": 12, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 24}, {"nombre": "Nieves Beyuma", "fecha": 13, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 25}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 57000, "interes": 7410, "fechaPago": null, "mora": null, "id": 26}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 27}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 7000, "interes": 1050, "fechaPago": null, "mora": null, "id": 28}, {"nombre": "Jeanette Layme", "fecha": 14, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 29}, {"nombre": "Jorge Flores", "fecha": 14, "capital": 1500, "interes": 225, "fechaPago": null, "mora": null, "id": 30}, {"nombre": "Nela", "fecha": 15, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 31}, {"nombre": "Nela", "fecha": 15, "capital": 7000, "interes": 420, "fechaPago": null, "mora": null, "id": 32}, {"nombre": "Jeanette Layme", "fecha": 15, "capital": 4500, "interes": 675, "fechaPago": null, "mora": null, "id": 33}, {"nombre": "Patricia Condori", "fecha": 15, "capital": 178400, "interes": 5352, "fechaPago": null, "mora": null, "id": 34}, {"nombre": "Nela", "fecha": 16, "capital": 11000, "interes": 770.0, "fechaPago": null, "mora": null, "id": 35}, {"nombre": "Oscar Condori", "fecha": 16, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 36}, {"nombre": "Heriberto", "fecha": 16, "capital": 3500, "interes": 175, "fechaPago": null, "mora": null, "id": 37}, {"nombre": "Rubén Ticona - Amigo", "fecha": 17, "capital": 13000, "interes": 1950, "fechaPago": null, "mora": null, "id": 38}, {"nombre": "Nela", "fecha": 18, "capital": 30000, "interes": 1800, "fechaPago": null, "mora": null, "id": 39}, {"nombre": "Jeanette Layme", "fecha": 18, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 40}, {"nombre": "Rubén Ticona - Amigo", "fecha": 18, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 41}, {"nombre": "Adrian López", "fecha": 19, "capital": 1500, "interes": 105.0, "fechaPago": null, "mora": null, "id": 42}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 170000, "interes": 25500, "fechaPago": null, "mora": null, "id": 43}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 30000, "interes": 4500, "fechaPago": null, "mora": null, "id": 44}, {"nombre": "Rubén Ticona - Amigo", "fecha": 21, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 45}, {"nombre": "Dra. Aleida", "fecha": 21, "capital": 55000, "interes": 7150, "fechaPago": null, "mora": null, "id": 46}, {"nombre": "Dra. Aleida", "fecha": 21, "capital": 7150, "interes": 1072.5, "fechaPago": null, "mora": null, "id": 47}, {"nombre": "Rubén Ticona - Amigo", "fecha": 22, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 48}, {"nombre": "Nela", "fecha": 23, "capital": 25000, "interes": 1500, "fechaPago": null, "mora": null, "id": 49}, {"nombre": "Marilin", "fecha": 23, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 50}, {"nombre": "Oscar Condori", "fecha": 24, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 51}, {"nombre": "Rubén Ticona - Amigo", "fecha": 24, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 52}, {"nombre": "Nela", "fecha": 24, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 53}, {"nombre": "Nieves Beyuma", "fecha": 24, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 54}, {"nombre": "Nela", "fecha": 24, "capital": 21000, "interes": 1470.0, "fechaPago": null, "mora": null, "id": 55}, {"nombre": "Nela", "fecha": 25, "capital": 100000, "interes": 5000, "fechaPago": null, "mora": null, "id": 56}, {"nombre": "Nela", "fecha": 26, "capital": 8000, "interes": 560, "fechaPago": null, "mora": null, "id": 57}, {"nombre": "Heriberto", "fecha": 26, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 58}, {"nombre": "Rubén Ticona - Amigo", "fecha": 27, "capital": 19000, "interes": 2850, "fechaPago": null, "mora": null, "id": 59}, {"nombre": "Hotel Rey Palace", "fecha": 28, "capital": 90000, "interes": 13500, "fechaPago": null, "mora": null, "id": 60}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 45000, "interes": 6750, "fechaPago": null, "mora": null, "id": 61}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 6750, "interes": 1012.5, "fechaPago": null, "mora": null, "id": 62}, {"nombre": "Richard y Andrea", "fecha": 28, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 63}, {"nombre": "Álvaro Flores", "fecha": 29, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 64}, {"nombre": "Vicky", "fecha": 29, "capital": 4000, "interes": 600, "fechaPago": null, "mora": null, "id": 65}, {"nombre": "Wilson Guzmán", "fecha": 30, "capital": 115000, "interes": 5750, "fechaPago": null, "mora": null, "id": 66}];
+const ORIGINAL_DATA = [{"nombre": "Nela", "fecha": 1, "capital": 5000, "interes": 350.0, "fechaPago": null, "mora": null, "id": 1}, {"nombre": "Rubén Ticona - Amigo", "fecha": 1, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 2, "resaltado": true}, {"nombre": "Adrian López", "fecha": 3, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 3}, {"nombre": "Nela", "fecha": 3, "capital": 7000, "interes": 490.0, "fechaPago": null, "mora": null, "id": 4}, {"nombre": "Nela", "fecha": 4, "capital": 55000, "interes": 3300, "fechaPago": null, "mora": null, "id": 5}, {"nombre": "Nela", "fecha": 4, "capital": 70000, "interes": 3500, "fechaPago": null, "mora": null, "id": 6}, {"nombre": "Nela", "fecha": 4, "capital": 15000, "interes": 262.5, "fechaPago": null, "mora": null, "id": 7}, {"nombre": "Patricia Condori", "fecha": 4, "capital": 2500, "interes": 200, "fechaPago": null, "mora": null, "id": 8}, {"nombre": "Patty - Su Clienta", "fecha": 4, "capital": 2500, "interes": 300, "fechaPago": null, "mora": null, "id": 9}, {"nombre": "Rubén Ticona - Amigo", "fecha": 5, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 10}, {"nombre": "Álvaro Flores", "fecha": 5, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 11}, {"nombre": "Patricia Condori", "fecha": 6, "capital": 32000, "interes": 1600, "fechaPago": null, "mora": null, "id": 12}, {"nombre": "Álvaro Flores", "fecha": 7, "capital": 8000, "interes": 1200, "fechaPago": null, "mora": null, "id": 13}, {"nombre": "Dra. Aleida", "fecha": 8, "capital": 25000, "interes": 3750, "fechaPago": null, "mora": null, "id": 14}, {"nombre": "Oscar Condori", "fecha": 9, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 15}, {"nombre": "Álvaro Flores", "fecha": 9, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 16}, {"nombre": "Oscar Condori", "fecha": 10, "capital": 7000, "interes": 1050, "fechaPago": null, "mora": null, "id": 17}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 18}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 19}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 20}, {"nombre": "Dra. Aleida", "fecha": 11, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 21}, {"nombre": "Dra. Aleida", "fecha": 11, "capital": 4000, "interes": 600, "fechaPago": null, "mora": null, "id": 22}, {"nombre": "Lizeth Pamela", "fecha": 11, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 23}, {"nombre": "Marilin", "fecha": 11, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 24}, {"nombre": "Nela", "fecha": 12, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 25}, {"nombre": "Dra. Aleida", "fecha": 12, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 26}, {"nombre": "Nieves Beyuma", "fecha": 13, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 27}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 57000, "interes": 7410, "fechaPago": null, "mora": null, "id": 28}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 29}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 7000, "interes": 1050, "fechaPago": null, "mora": null, "id": 30}, {"nombre": "Jeanette Layme", "fecha": 14, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 31}, {"nombre": "Jorge Flores", "fecha": 14, "capital": 1500, "interes": 225, "fechaPago": null, "mora": null, "id": 32}, {"nombre": "Nela", "fecha": 15, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 33}, {"nombre": "Nela", "fecha": 15, "capital": 7000, "interes": 420, "fechaPago": null, "mora": null, "id": 34}, {"nombre": "Jeanette Layme", "fecha": 15, "capital": 4500, "interes": 675, "fechaPago": null, "mora": null, "id": 35}, {"nombre": "Patricia Condori", "fecha": 15, "capital": 178400, "interes": 5352, "fechaPago": null, "mora": null, "id": 36}, {"nombre": "Nela", "fecha": 16, "capital": 11000, "interes": 770.0, "fechaPago": null, "mora": null, "id": 37}, {"nombre": "Oscar Condori", "fecha": 16, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 38}, {"nombre": "Heriberto", "fecha": 16, "capital": 3500, "interes": 175, "fechaPago": null, "mora": null, "id": 39}, {"nombre": "Rubén Ticona - Amigo", "fecha": 17, "capital": 13000, "interes": 1950, "fechaPago": null, "mora": null, "id": 40}, {"nombre": "Nela", "fecha": 18, "capital": 30000, "interes": 1800, "fechaPago": null, "mora": null, "id": 41}, {"nombre": "Jeanette Layme", "fecha": 18, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 42}, {"nombre": "Rubén Ticona - Amigo", "fecha": 18, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 43}, {"nombre": "Adrian López", "fecha": 19, "capital": 1500, "interes": 105.0, "fechaPago": null, "mora": null, "id": 44}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 170000, "interes": 25500, "fechaPago": null, "mora": null, "id": 45}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 30000, "interes": 4500, "fechaPago": null, "mora": null, "id": 46}, {"nombre": "Rubén Ticona - Amigo", "fecha": 21, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 47}, {"nombre": "Dra. Aleida", "fecha": 21, "capital": 55000, "interes": 7150, "fechaPago": null, "mora": null, "id": 48}, {"nombre": "Dra. Aleida", "fecha": 21, "capital": 7150, "interes": 1072.5, "fechaPago": null, "mora": null, "id": 49}, {"nombre": "Rubén Ticona - Amigo", "fecha": 22, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 50}, {"nombre": "Nela", "fecha": 23, "capital": 25000, "interes": 1500, "fechaPago": null, "mora": null, "id": 51}, {"nombre": "Marilin", "fecha": 23, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 52}, {"nombre": "Oscar Condori", "fecha": 24, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 53}, {"nombre": "Nela", "fecha": 24, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 54}, {"nombre": "Nieves Beyuma", "fecha": 24, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 55}, {"nombre": "Nela", "fecha": 24, "capital": 21000, "interes": 1470.0, "fechaPago": null, "mora": null, "id": 56}, {"nombre": "Nela", "fecha": 25, "capital": 100000, "interes": 5000, "fechaPago": null, "mora": null, "id": 57}, {"nombre": "Nela", "fecha": 26, "capital": 8000, "interes": 560, "fechaPago": null, "mora": null, "id": 58}, {"nombre": "Heriberto", "fecha": 26, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 59}, {"nombre": "Rubén Ticona - Amigo", "fecha": 27, "capital": 19000, "interes": 2850, "fechaPago": null, "mora": null, "id": 60}, {"nombre": "Nela", "fecha": 28, "capital": 5000, "interes": 350.0, "fechaPago": null, "mora": null, "id": 61}, {"nombre": "Hotel Rey Palace", "fecha": 28, "capital": 90000, "interes": 13500, "fechaPago": null, "mora": null, "id": 62}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 45000, "interes": 6750, "fechaPago": null, "mora": null, "id": 63}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 6750, "interes": 1012.5, "fechaPago": null, "mora": null, "id": 64}, {"nombre": "Richard y Andrea", "fecha": 28, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 65}, {"nombre": "Álvaro Flores", "fecha": 29, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 66}, {"nombre": "Vicky", "fecha": 29, "capital": 4000, "interes": 600, "fechaPago": null, "mora": null, "id": 67}, {"nombre": "Rubén Ticona - Amigo", "fecha": 30, "capital": 8000, "interes": 1200, "fechaPago": null, "mora": null, "id": 68}, {"nombre": "Nela", "fecha": 30, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 69}, {"nombre": "Wilson Guzmán", "fecha": 30, "capital": 115000, "interes": 5750, "fechaPago": null, "mora": null, "id": 70}];
 const STORAGE_KEY = 'libroIntereses_agosto2026_v1';
 
 let state = { loans: [], editingId: null, filter: 'todos', sort: 'fecha' };
@@ -801,7 +783,7 @@ function renderExcelView(list){
 
   let rows = '';
   list.forEach((l,i)=>{
-    rows += `<tr data-id="${l.id}" style="cursor:pointer;">
+    rows += `<tr data-id="${l.id}" class="${l.resaltado?'resaltado':''}" style="cursor:pointer;">
       <td class="center">${i+1}</td>
       <td>${escapeHtml(l.nombre||'')}</td>
       <td class="center">${l.fecha!=null ? l.fecha : ''}</td>
@@ -845,7 +827,7 @@ function openFullscreenView(list, query){
   const interes = list.reduce((a,l)=>a+Number(l.interes||0),0);
   let rows = '';
   list.forEach((l,i)=>{
-    rows += `<tr>
+    rows += `<tr class="${l.resaltado?'resaltado':''}">
       <td class="center">${i+1}</td>
       <td>${escapeHtml(l.nombre||'')}</td>
       <td class="center">${l.fecha!=null ? l.fecha : ''}</td>
@@ -880,7 +862,7 @@ function exportFilteredPDF(list, query){
   const interes = list.reduce((a,l)=>a+Number(l.interes||0),0);
   let rows = '';
   list.forEach((l,i)=>{
-    rows += `<tr>
+    rows += `<tr class="${l.resaltado?'resaltado':''}">
       <td class="center">${i+1}</td>
       <td>${escapeHtml(l.nombre||'')}</td>
       <td class="center">${l.fecha!=null ? l.fecha : ''}</td>
@@ -952,7 +934,7 @@ function render(){
       ledger.appendChild(lbl);
     }
     const row = document.createElement('div');
-    row.className = 'entry';
+    row.className = 'entry' + (l.resaltado ? ' resaltado' : '');
     row.dataset.id = l.id;
     const pagado = !!l.fechaPago;
     const mora = !!(l.mora && String(l.mora).trim());
@@ -997,6 +979,8 @@ function openSheet(id){
   const isPagado = !!(l && l.fechaPago);
   document.getElementById('pagadoSwitch').classList.toggle('on', isPagado);
   document.getElementById('fechaPagoField').style.display = isPagado ? 'block' : 'none';
+  document.getElementById('resaltadoSwitch').classList.toggle('on', !!(l && l.resaltado));
+  document.getElementById('resaltadoSwitch').classList.add('naranja');
   document.querySelectorAll('.tasa-chip').forEach(c=>c.classList.remove('active'));
   document.getElementById('interesPreview').textContent = '';
 
@@ -1018,6 +1002,10 @@ document.getElementById('fabAdd').addEventListener('click', ()=>openSheet(null))
 document.getElementById('pagadoSwitch').addEventListener('click', function(){
   this.classList.toggle('on');
   document.getElementById('fechaPagoField').style.display = this.classList.contains('on') ? 'block' : 'none';
+});
+
+document.getElementById('resaltadoSwitch').addEventListener('click', function(){
+  this.classList.toggle('on');
 });
 
 document.getElementById('tasaRow').addEventListener('click', (e)=>{
@@ -1046,17 +1034,18 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
   const mora = document.getElementById('fMora').value.trim();
   const pagado = document.getElementById('pagadoSwitch').classList.contains('on');
   const fechaPago = pagado ? document.getElementById('fFechaPago').value.trim() : null;
+  const resaltado = document.getElementById('resaltadoSwitch').classList.contains('on');
 
   if(!nombre){ toast('Escribe un nombre'); return; }
   if(!capital){ toast('Ingresa el capital'); return; }
 
   if(state.editingId){
     const l = state.loans.find(x=>x.id===state.editingId);
-    Object.assign(l, {nombre, fecha, capital, interes, mora: mora||null, fechaPago: fechaPago||null});
+    Object.assign(l, {nombre, fecha, capital, interes, mora: mora||null, fechaPago: fechaPago||null, resaltado});
     toast('Préstamo actualizado');
   } else {
     const newId = Math.max(0, ...state.loans.map(x=>x.id)) + 1;
-    state.loans.push({id:newId, nombre, fecha, capital, interes, mora: mora||null, fechaPago: fechaPago||null});
+    state.loans.push({id:newId, nombre, fecha, capital, interes, mora: mora||null, fechaPago: fechaPago||null, resaltado});
     toast('Préstamo agregado');
   }
   persist();
@@ -1118,82 +1107,6 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   const fileLabel = currentMonthYearEs().replace(' ', '_');
   XLSX.writeFile(wb, `Cuadro_Intereses_${fileLabel}.xlsx`);
   toast('Excel exportado');
-});
-
-document.getElementById('ghSyncOpenBtn').addEventListener('click', ()=>{
-  document.getElementById('ghOwner').value = localStorage.getItem('gh_owner') || 'edwincondorik';
-  document.getElementById('ghRepo').value = localStorage.getItem('gh_repo') || 'Intereses';
-  document.getElementById('ghPath').value = localStorage.getItem('gh_path') || 'data.xlsx';
-  document.getElementById('ghToken').value = localStorage.getItem('gh_token') || '';
-  backdrop.classList.add('open');
-  document.getElementById('githubSheet').classList.add('open');
-});
-function closeGithubSheet(){
-  backdrop.classList.remove('open');
-  document.getElementById('githubSheet').classList.remove('open');
-}
-document.getElementById('githubSheetClose').addEventListener('click', closeGithubSheet);
-
-document.getElementById('ghSyncBtn').addEventListener('click', async ()=>{
-  const token = document.getElementById('ghToken').value.trim();
-  const owner = document.getElementById('ghOwner').value.trim();
-  const repo = document.getElementById('ghRepo').value.trim();
-  const path = document.getElementById('ghPath').value.trim() || 'data.xlsx';
-  if(!token || !owner || !repo){ toast('Completa usuario, repositorio y token'); return; }
-
-  localStorage.setItem('gh_owner', owner);
-  localStorage.setItem('gh_repo', repo);
-  localStorage.setItem('gh_path', path);
-  localStorage.setItem('gh_token', token);
-
-  const btn = document.getElementById('ghSyncBtn');
-  const originalText = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Sincronizando…';
-
-  try{
-    const wb = buildWorkbook();
-    const base64 = XLSX.write(wb, {bookType:'xlsx', type:'base64'});
-    const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${path}`;
-    const headers = {
-      'Authorization': 'token ' + token,
-      'Accept': 'application/vnd.github+json'
-    };
-
-    let sha = null;
-    const getRes = await fetch(apiUrl, {headers});
-    if(getRes.ok){
-      const info = await getRes.json();
-      sha = info.sha;
-    } else if(getRes.status !== 404){
-      throw new Error('No se pudo verificar el archivo (código ' + getRes.status + ')');
-    }
-
-    const putRes = await fetch(apiUrl, {
-      method: 'PUT',
-      headers: {...headers, 'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        message: 'Actualización desde la app — ' + new Date().toLocaleString('es-BO'),
-        content: base64,
-        sha: sha || undefined
-      })
-    });
-
-    if(!putRes.ok){
-      const errBody = await putRes.text();
-      throw new Error('GitHub respondió ' + putRes.status + ': ' + errBody.slice(0,150));
-    }
-
-    localStorage.setItem('dataxlsx_fingerprint', loanListFingerprint(state.loans));
-    toast('✅ Sincronizado con GitHub');
-    closeGithubSheet();
-  }catch(err){
-    console.error(err);
-    toast('❌ No se pudo sincronizar — revisa el token o el repositorio');
-  }finally{
-    btn.disabled = false;
-    btn.textContent = originalText;
-  }
 });
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
@@ -1427,62 +1340,10 @@ function applyCurrentMonthHeader(){
   document.getElementById('pageTitle').textContent = `Libro de Intereses — ${label}`;
 }
 
-function loanListFingerprint(list){
-  const total = list.reduce((a,l)=>a + Number(l.capital||0) + Number(l.interes||0), 0);
-  return list.length + '|' + total.toFixed(2);
-}
-
-async function checkHostedDataFile(){
-  try{
-    const res = await fetch('./data.xlsx?t=' + Date.now(), {cache:'no-store'});
-    if(!res.ok) return; // no data.xlsx uploaded yet in the repo — nothing to do
-    const buf = await res.arrayBuffer();
-    const wb = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:null});
-    const parsed = parseLoanRows(rows);
-    if(parsed.length === 0) return;
-
-    const fp = loanListFingerprint(parsed);
-    const lastSeen = localStorage.getItem('dataxlsx_fingerprint');
-    if(fp === lastSeen) return; // already applied this version, nothing changed
-
-    const hasExistingWork = state.loans.length > 0;
-    if(!hasExistingWork){
-      // nothing to lose — adopt it directly
-      state.loans = parsed;
-      persist();
-      localStorage.setItem('dataxlsx_fingerprint', fp);
-      render();
-      toast('Datos actualizados desde el Excel del repositorio');
-      return;
-    }
-
-    // there's existing local data/edits — ask before touching it, reusing the same import sheet
-    pendingImport = parsed;
-    const remaining = buildKeyCounts(state.loans);
-    let wouldDuplicate = 0;
-    parsed.forEach(l=>{
-      const k = loanKey(l);
-      const n = remaining.get(k) || 0;
-      if(n > 0){ wouldDuplicate++; remaining.set(k, n-1); }
-    });
-    document.getElementById('importSummary').innerHTML =
-      `📡 Se detectó una versión nueva del Excel en el repositorio, con <b>${parsed.length}</b> préstamos.` +
-      (wouldDuplicate>0 ? `<br><br>⚠️ <b>${wouldDuplicate}</b> ya están guardados igual. Si eliges "Agregar", esos se omitirán.` : '<br><br>Ninguno coincide con lo que ya tienes guardado.');
-    backdrop.classList.add('open');
-    document.getElementById('importSheet').classList.add('open');
-    localStorage.setItem('dataxlsx_fingerprint', fp);
-  }catch(err){
-    console.error('No se pudo revisar data.xlsx', err);
-  }
-}
-
 /* ---------- init ---------- */
 loadState();
 applyCurrentMonthHeader();
 render();
-checkHostedDataFile();
 </script>
 </body>
 </html>
