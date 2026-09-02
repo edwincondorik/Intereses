@@ -52,7 +52,7 @@
   }
   header.cover::after{
     content:"";
-    position:absolute; inset:0;
+    position:absolute; top:0; right:0; bottom:0; left:0;
     background-image:repeating-linear-gradient(180deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 26px);
     pointer-events:none;
   }
@@ -356,7 +356,7 @@
 
   /* ---------- sheet / modal ---------- */
   .sheet-backdrop{
-    position:fixed; inset:0;
+    position:fixed; top:0; right:0; bottom:0; left:0;
     background:rgba(28,43,36,0.45);
     z-index:60;
     display:none;
@@ -513,7 +513,7 @@
   #printArea{display:none;}
 
   .fullscreen-view{
-    position:fixed; inset:0;
+    position:fixed; top:0; right:0; bottom:0; left:0;
     background:var(--paper);
     z-index:90;
     display:none;
