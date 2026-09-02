@@ -819,7 +819,14 @@ function renderExcelView(list){
     tr.addEventListener('click', ()=>openSheet(parseInt(tr.dataset.id)));
   });
   document.getElementById('pdfBtn').addEventListener('click', ()=>exportFilteredPDF(list, currentSearchQuery));
-  document.getElementById('fsBtn').addEventListener('click', ()=>openFullscreenView(list, currentSearchQuery));
+  document.getElementById('fsBtn').addEventListener('click', ()=>{
+    try{
+      openFullscreenView(list, currentSearchQuery);
+    }catch(err){
+      alert('Error al abrir pantalla completa: ' + err.message);
+      console.error(err);
+    }
+  });
 }
 
 function openFullscreenView(list, query){
@@ -852,9 +859,15 @@ function openFullscreenView(list, query){
     </div>
   `;
   document.getElementById('fullscreenView').classList.add('open');
+  const fsEl = document.getElementById('fullscreenView');
+  fsEl.classList.add('open');
+  fsEl.style.cssText = 'display:flex !important; position:fixed !important; top:0 !important; right:0 !important; bottom:0 !important; left:0 !important; z-index:999 !important; background:#F7F2E7 !important; flex-direction:column !important; overflow-y:auto !important;';
+  window.scrollTo(0,0);
 }
 document.getElementById('fsClose').addEventListener('click', ()=>{
-  document.getElementById('fullscreenView').classList.remove('open');
+  const fsEl = document.getElementById('fullscreenView');
+  fsEl.classList.remove('open');
+  fsEl.style.cssText = '';
 });
 
 function exportFilteredPDF(list, query){
