@@ -98,6 +98,30 @@
     margin-top:4px;
   }
 
+  /* ---------- tab bar ---------- */
+  .tab-bar{
+    display:flex;
+    gap:8px;
+    padding:12px 20px 0;
+  }
+  .tab-btn{
+    flex:1;
+    text-align:center;
+    padding:10px 8px;
+    border-radius:12px;
+    border:1px solid var(--paper-line);
+    background:var(--paper-card);
+    color:var(--ink-60);
+    font-size:13px;
+    font-weight:600;
+    font-family:var(--sans);
+  }
+  .tab-btn.active{
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+  }
+
   /* ---------- search / filter bar ---------- */
   .toolbar{
     display:flex;
@@ -593,6 +617,11 @@
   </div>
 </header>
 
+<div class="tab-bar">
+  <button class="tab-btn active" id="tabPrincipal" data-tab="principal">📋 Carmen</button>
+  <button class="tab-btn" id="tabOtra" data-tab="otra">👤 Edwin</button>
+</div>
+
 <div class="toolbar">
   <div class="search-box">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -725,22 +754,49 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const ORIGINAL_DATA = [{"nombre": "Nela", "fecha": 1, "capital": 5000, "interes": 350.0, "fechaPago": null, "mora": null, "id": 1}, {"nombre": "Rubén Ticona - Amigo", "fecha": 1, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 2, "resaltado": true}, {"nombre": "Adrian López", "fecha": 3, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 3}, {"nombre": "Nela", "fecha": 3, "capital": 7000, "interes": 490.0, "fechaPago": null, "mora": null, "id": 4}, {"nombre": "Nela", "fecha": 4, "capital": 55000, "interes": 3300, "fechaPago": null, "mora": null, "id": 5}, {"nombre": "Nela", "fecha": 4, "capital": 70000, "interes": 3500, "fechaPago": null, "mora": null, "id": 6}, {"nombre": "Nela", "fecha": 4, "capital": 15000, "interes": 262.5, "fechaPago": null, "mora": null, "id": 7}, {"nombre": "Patricia Condori", "fecha": 4, "capital": 2500, "interes": 200, "fechaPago": null, "mora": null, "id": 8}, {"nombre": "Patty - Su Clienta", "fecha": 4, "capital": 2500, "interes": 300, "fechaPago": null, "mora": null, "id": 9}, {"nombre": "Rubén Ticona - Amigo", "fecha": 5, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 10}, {"nombre": "Álvaro Flores", "fecha": 5, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 11}, {"nombre": "Patricia Condori", "fecha": 6, "capital": 32000, "interes": 1600, "fechaPago": null, "mora": null, "id": 12}, {"nombre": "Álvaro Flores", "fecha": 7, "capital": 8000, "interes": 1200, "fechaPago": null, "mora": null, "id": 13}, {"nombre": "Dra. Aleida", "fecha": 8, "capital": 25000, "interes": 3750, "fechaPago": null, "mora": null, "id": 14}, {"nombre": "Oscar Condori", "fecha": 9, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 15}, {"nombre": "Álvaro Flores", "fecha": 9, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 16}, {"nombre": "Oscar Condori", "fecha": 10, "capital": 7000, "interes": 1050, "fechaPago": null, "mora": null, "id": 17}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 18}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 19}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 20}, {"nombre": "Dra. Aleida", "fecha": 11, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 21}, {"nombre": "Dra. Aleida", "fecha": 11, "capital": 4000, "interes": 600, "fechaPago": null, "mora": null, "id": 22}, {"nombre": "Lizeth Pamela", "fecha": 11, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 23}, {"nombre": "Marilin", "fecha": 11, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 24}, {"nombre": "Nela", "fecha": 12, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 25}, {"nombre": "Dra. Aleida", "fecha": 12, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 26}, {"nombre": "Nieves Beyuma", "fecha": 13, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 27}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 57000, "interes": 7410, "fechaPago": null, "mora": null, "id": 28}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 29}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 7000, "interes": 1050, "fechaPago": null, "mora": null, "id": 30}, {"nombre": "Jeanette Layme", "fecha": 14, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 31}, {"nombre": "Jorge Flores", "fecha": 14, "capital": 1500, "interes": 225, "fechaPago": null, "mora": null, "id": 32}, {"nombre": "Nela", "fecha": 15, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 33}, {"nombre": "Nela", "fecha": 15, "capital": 7000, "interes": 420, "fechaPago": null, "mora": null, "id": 34}, {"nombre": "Jeanette Layme", "fecha": 15, "capital": 4500, "interes": 675, "fechaPago": null, "mora": null, "id": 35}, {"nombre": "Patricia Condori", "fecha": 15, "capital": 178400, "interes": 5352, "fechaPago": null, "mora": null, "id": 36}, {"nombre": "Nela", "fecha": 16, "capital": 11000, "interes": 770.0, "fechaPago": null, "mora": null, "id": 37}, {"nombre": "Oscar Condori", "fecha": 16, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 38}, {"nombre": "Heriberto", "fecha": 16, "capital": 3500, "interes": 175, "fechaPago": null, "mora": null, "id": 39}, {"nombre": "Rubén Ticona - Amigo", "fecha": 17, "capital": 13000, "interes": 1950, "fechaPago": null, "mora": null, "id": 40}, {"nombre": "Nela", "fecha": 18, "capital": 30000, "interes": 1800, "fechaPago": null, "mora": null, "id": 41}, {"nombre": "Jeanette Layme", "fecha": 18, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 42}, {"nombre": "Rubén Ticona - Amigo", "fecha": 18, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 43}, {"nombre": "Adrian López", "fecha": 19, "capital": 1500, "interes": 105.0, "fechaPago": null, "mora": null, "id": 44}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 170000, "interes": 25500, "fechaPago": null, "mora": null, "id": 45}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 30000, "interes": 4500, "fechaPago": null, "mora": null, "id": 46}, {"nombre": "Rubén Ticona - Amigo", "fecha": 21, "capital": 20000, "interes": 3000, "fechaPago": null, "mora": null, "id": 47}, {"nombre": "Dra. Aleida", "fecha": 21, "capital": 55000, "interes": 7150, "fechaPago": null, "mora": null, "id": 48}, {"nombre": "Dra. Aleida", "fecha": 21, "capital": 7150, "interes": 1072.5, "fechaPago": null, "mora": null, "id": 49}, {"nombre": "Rubén Ticona - Amigo", "fecha": 22, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 50}, {"nombre": "Nela", "fecha": 23, "capital": 25000, "interes": 1500, "fechaPago": null, "mora": null, "id": 51}, {"nombre": "Marilin", "fecha": 23, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 52}, {"nombre": "Oscar Condori", "fecha": 24, "capital": 15000, "interes": 2250, "fechaPago": null, "mora": null, "id": 53}, {"nombre": "Nela", "fecha": 24, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 54}, {"nombre": "Nieves Beyuma", "fecha": 24, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 55}, {"nombre": "Nela", "fecha": 24, "capital": 21000, "interes": 1470.0, "fechaPago": null, "mora": null, "id": 56}, {"nombre": "Nela", "fecha": 25, "capital": 100000, "interes": 5000, "fechaPago": null, "mora": null, "id": 57}, {"nombre": "Nela", "fecha": 26, "capital": 8000, "interes": 560, "fechaPago": null, "mora": null, "id": 58}, {"nombre": "Heriberto", "fecha": 26, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 59}, {"nombre": "Rubén Ticona - Amigo", "fecha": 27, "capital": 19000, "interes": 2850, "fechaPago": null, "mora": null, "id": 60}, {"nombre": "Nela", "fecha": 28, "capital": 5000, "interes": 350.0, "fechaPago": null, "mora": null, "id": 61}, {"nombre": "Hotel Rey Palace", "fecha": 28, "capital": 90000, "interes": 13500, "fechaPago": null, "mora": null, "id": 62}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 45000, "interes": 6750, "fechaPago": null, "mora": null, "id": 63}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 6750, "interes": 1012.5, "fechaPago": null, "mora": null, "id": 64}, {"nombre": "Richard y Andrea", "fecha": 28, "capital": 2000, "interes": 300, "fechaPago": null, "mora": null, "id": 65}, {"nombre": "Álvaro Flores", "fecha": 29, "capital": 2500, "interes": 375, "fechaPago": null, "mora": null, "id": 66}, {"nombre": "Vicky", "fecha": 29, "capital": 4000, "interes": 600, "fechaPago": null, "mora": null, "id": 67}, {"nombre": "Rubén Ticona - Amigo", "fecha": 30, "capital": 8000, "interes": 1200, "fechaPago": null, "mora": null, "id": 68}, {"nombre": "Nela", "fecha": 30, "capital": 10000, "interes": 700.0, "fechaPago": null, "mora": null, "id": 69}, {"nombre": "Wilson Guzmán", "fecha": 30, "capital": 115000, "interes": 5750, "fechaPago": null, "mora": null, "id": 70}];
+const ORIGINAL_DATA_2 = [{"nombre": "Bancos", "fecha": 1, "capital": 20700, "interes": 0, "fechaPago": null, "mora": null, "id": 1}, {"nombre": "Patty - Su Clienta", "fecha": 4, "capital": 2500, "interes": 300, "fechaPago": null, "mora": null, "id": 2}, {"nombre": "Bocona queque", "fecha": 4, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 3}, {"nombre": "Rubén Ticona", "fecha": 5, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 4}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1500, "fechaPago": null, "mora": null, "id": 5}, {"nombre": "Dra. Aleida", "fecha": 10, "capital": 10000, "interes": 1000, "fechaPago": null, "mora": null, "id": 6}, {"nombre": "Nela", "fecha": 12, "capital": 5000, "interes": 350.0, "fechaPago": null, "mora": null, "id": 7}, {"nombre": "Dra. Aleida", "fecha": 14, "capital": 37000, "interes": 3000.0, "fechaPago": null, "mora": null, "id": 8}, {"nombre": "Jeanette Layme", "fecha": 15, "capital": 4500, "interes": 675, "fechaPago": null, "mora": null, "id": 9}, {"nombre": "Nela", "fecha": 18, "capital": 5000, "interes": 300, "fechaPago": null, "mora": null, "id": 10}, {"nombre": "Jeanette Layme", "fecha": 18, "capital": 7500, "interes": 1125, "fechaPago": null, "mora": null, "id": 11}, {"nombre": "José Huanca", "fecha": 18, "capital": 5000, "interes": 400, "fechaPago": null, "mora": null, "id": 12}, {"nombre": "Hotel Rey Palace", "fecha": 20, "capital": 15000, "interes": 1500, "fechaPago": null, "mora": null, "id": 13}, {"nombre": "José Huanca", "fecha": 20, "capital": 4000, "interes": 320, "fechaPago": null, "mora": null, "id": 14}, {"nombre": "Rubén Ticona", "fecha": 21, "capital": 3000, "interes": 450, "fechaPago": null, "mora": null, "id": 15}, {"nombre": "Rubén Ticona", "fecha": 22, "capital": 10000, "interes": 750, "fechaPago": null, "mora": null, "id": 16}, {"nombre": "José Huanca", "fecha": 22, "capital": 4500, "interes": 360, "fechaPago": null, "mora": null, "id": 17}, {"nombre": "Nela", "fecha": 24, "capital": 3000, "interes": 210.0, "fechaPago": null, "mora": null, "id": 18}, {"nombre": "Nieves Beyuma", "fecha": 24, "capital": 1000, "interes": 150, "fechaPago": null, "mora": null, "id": 19}, {"nombre": "Dra. Aleida", "fecha": 24, "capital": 2000, "interes": 150, "fechaPago": null, "mora": null, "id": 20}, {"nombre": "José Huanca", "fecha": 24, "capital": 10000, "interes": 800, "fechaPago": null, "mora": null, "id": 21}, {"nombre": "Dra. Aleida", "fecha": 28, "capital": 32000, "interes": 3000, "fechaPago": null, "mora": null, "id": 22}];
 const STORAGE_KEY = 'libroIntereses_agosto2026_v1';
+const STORAGE_KEY_2 = 'libroIntereses_otraCuenta_v1';
 
-let state = { loans: [], editingId: null, filter: 'todos', sort: 'fecha' };
+let state = { loans: [], editingId: null, filter: 'todos', sort: 'fecha', activeTab: 'principal' };
+let datasets = { principal: [], otra: [] };
 let currentSearchQuery = '';
 
+function currentStorageKey(){
+  return state.activeTab === 'otra' ? STORAGE_KEY_2 : STORAGE_KEY;
+}
+function currentOriginalData(){
+  return state.activeTab === 'otra' ? ORIGINAL_DATA_2 : ORIGINAL_DATA;
+}
+
 function loadState(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(raw){
-    try{ state.loans = JSON.parse(raw); return; }catch(e){}
-  }
-  state.loans = JSON.parse(JSON.stringify(ORIGINAL_DATA));
+  ['principal','otra'].forEach(tab => {
+    const key = tab === 'otra' ? STORAGE_KEY_2 : STORAGE_KEY;
+    const raw = localStorage.getItem(key);
+    if(raw){
+      try{ datasets[tab] = JSON.parse(raw); return; }catch(e){}
+    }
+    datasets[tab] = JSON.parse(JSON.stringify(tab === 'otra' ? ORIGINAL_DATA_2 : ORIGINAL_DATA));
+  });
+  state.loans = datasets[state.activeTab];
   persist();
 }
 function persist(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.loans));
+  datasets[state.activeTab] = state.loans;
+  localStorage.setItem(currentStorageKey(), JSON.stringify(state.loans));
 }
+function switchTab(tab){
+  if(state.activeTab === tab) return;
+  datasets[state.activeTab] = state.loans;
+  state.activeTab = tab;
+  state.loans = datasets[tab];
+  document.getElementById('tabPrincipal').classList.toggle('active', tab==='principal');
+  document.getElementById('tabOtra').classList.toggle('active', tab==='otra');
+  document.getElementById('searchInput').value = '';
+  render();
+}
+document.getElementById('tabPrincipal').addEventListener('click', ()=>switchTab('principal'));
+document.getElementById('tabOtra').addEventListener('click', ()=>switchTab('otra'));
 function fmtBs(n){
   return 'Bs. ' + Number(n||0).toLocaleString('es-BO', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
@@ -1123,8 +1179,8 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
 });
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(!confirm('Esto reemplazará tus cambios con los 66 préstamos originales del archivo. ¿Continuar?')) return;
-  state.loans = JSON.parse(JSON.stringify(ORIGINAL_DATA));
+  if(!confirm(`Esto reemplazará tus cambios con los ${currentOriginalData().length} préstamos originales del archivo. ¿Continuar?`)) return;
+  state.loans = JSON.parse(JSON.stringify(currentOriginalData()));
   persist();
   render();
   toast('Datos originales restaurados');
