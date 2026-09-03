@@ -1228,7 +1228,8 @@ document.getElementById('dedupeBtn').addEventListener('click', ()=>{
   toast(`${removed} duplicado(s) eliminados`);
 });
 
-let pendingImport = [];
+let pendingImportPrincipal = [];
+let pendingImportOtra = [];
 
 document.getElementById('importBtn').addEventListener('click', ()=>{
   document.getElementById('fileInput').click();
@@ -1243,6 +1244,21 @@ function buildKeyCounts(list){
   return m;
 }
 
+function mergeInto(existingList, parsedList){
+  const remaining = buildKeyCounts(existingList);
+  let nextId = Math.max(0, ...existingList.map(x=>x.id), 0) + 1;
+  let added = 0, skipped = 0;
+  const result = existingList.slice();
+  parsedList.forEach(l=>{
+    const k = loanKey(l);
+    const n = remaining.get(k) || 0;
+    if(n > 0){ remaining.set(k, n-1); skipped++; return; }
+    result.push({...l, id: nextId++});
+    added++;
+  });
+  return {result, added, skipped};
+}
+
 document.getElementById('fileInput').addEventListener('change', function(e){
   const file = e.target.files[0];
   if(!file) return;
@@ -1252,22 +1268,29 @@ document.getElementById('fileInput').addEventListener('change', function(e){
       const wb = XLSX.read(new Uint8Array(evt.target.result), {type:'array', cellDates:true});
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:null});
-      const parsed = parseLoanRows(rows);
-      if(parsed.length === 0){
+      const {principal, otra} = parseTwoTables(rows);
+      if(principal.length === 0 && otra.length === 0){
         toast('No se encontraron préstamos en el archivo');
         return;
       }
-      pendingImport = parsed;
-      const remaining = buildKeyCounts(state.loans);
-      let wouldDuplicate = 0;
-      parsed.forEach(l=>{
-        const k = loanKey(l);
-        const n = remaining.get(k) || 0;
-        if(n > 0){ wouldDuplicate++; remaining.set(k, n-1); }
-      });
-      document.getElementById('importSummary').innerHTML =
-        `Se encontraron <b>${parsed.length}</b> préstamos en el archivo.` +
-        (wouldDuplicate>0 ? `<br><br>⚠️ <b>${wouldDuplicate}</b> ya están guardados igual (mismo nombre, día, capital e interés). Si eliges "Agregar", esos se omitirán; el resto se agrega tal cual, aunque haya montos repetidos entre sí.` : '<br><br>Ninguno coincide con préstamos que ya tienes guardados.');
+      pendingImportPrincipal = principal;
+      pendingImportOtra = otra;
+      datasets[state.activeTab] = state.loans; // sync any pending edits before previewing duplicates
+
+      const remP = buildKeyCounts(datasets.principal);
+      let dupP = 0;
+      principal.forEach(l=>{ const k=loanKey(l); const n=remP.get(k)||0; if(n>0){dupP++; remP.set(k,n-1);} });
+      const remO = buildKeyCounts(datasets.otra);
+      let dupO = 0;
+      otra.forEach(l=>{ const k=loanKey(l); const n=remO.get(k)||0; if(n>0){dupO++; remO.set(k,n-1);} });
+
+      let msg = `<b>Carmen (tabla 1):</b> ${principal.length} préstamos encontrados` + (dupP>0?` — ${dupP} ya guardados igual`:'') + '.<br>';
+      msg += otra.length>0
+        ? `<b>Edwin (tabla 2):</b> ${otra.length} préstamos encontrados` + (dupO>0?` — ${dupO} ya guardados igual`:'') + '.'
+        : `<b>Edwin (tabla 2):</b> no se encontró una segunda tabla en este archivo — esa pestaña no se toca.`;
+      msg += '<br><br>Esto se aplica a las dos pestañas al mismo tiempo.';
+      document.getElementById('importSummary').innerHTML = msg;
+
       backdrop.classList.add('open');
       document.getElementById('importSheet').classList.add('open');
     }catch(err){
@@ -1287,31 +1310,40 @@ document.getElementById('importSheetClose').addEventListener('click', closeImpor
 document.getElementById('importCancelBtn').addEventListener('click', closeImportSheet);
 
 document.getElementById('importAddBtn').addEventListener('click', ()=>{
-  const remaining = buildKeyCounts(state.loans);
-  let nextId = Math.max(0, ...state.loans.map(x=>x.id)) + 1;
-  let added = 0, skipped = 0;
-  pendingImport.forEach(l=>{
-    const k = loanKey(l);
-    const n = remaining.get(k) || 0;
-    if(n > 0){ remaining.set(k, n-1); skipped++; return; }
-    l.id = nextId++;
-    state.loans.push(l);
-    added++;
-  });
-  persist();
+  const rP = mergeInto(datasets.principal, pendingImportPrincipal);
+  datasets.principal = rP.result;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(datasets.principal));
+
+  let addedO = 0, skippedO = 0;
+  if(pendingImportOtra.length > 0){
+    const rO = mergeInto(datasets.otra, pendingImportOtra);
+    datasets.otra = rO.result;
+    localStorage.setItem(STORAGE_KEY_2, JSON.stringify(datasets.otra));
+    addedO = rO.added; skippedO = rO.skipped;
+  }
+
+  state.loans = datasets[state.activeTab];
   closeImportSheet();
   render();
-  toast(skipped>0 ? `${added} agregados · ${skipped} duplicados omitidos` : `${added} préstamos agregados`);
+  const parts = [`Carmen: +${rP.added}${rP.skipped?` (${rP.skipped} omitidos)`:''}`];
+  if(pendingImportOtra.length > 0) parts.push(`Edwin: +${addedO}${skippedO?` (${skippedO} omitidos)`:''}`);
+  toast(parts.join(' · '));
 });
 
 document.getElementById('importReplaceBtn').addEventListener('click', ()=>{
-  if(!confirm(`Vas a reemplazar TODOS tus datos actuales (${state.loans.length}) por los ${pendingImport.length} del archivo. Esto no se puede deshacer. ¿Continuar?`)) return;
-  state.loans = pendingImport;
-  persist();
+  const totalCurrent = datasets.principal.length + datasets.otra.length;
+  if(!confirm(`Vas a reemplazar TODOS los datos actuales de las dos pestañas (${totalCurrent} en total) por los del archivo. Esto no se puede deshacer. ¿Continuar?`)) return;
+  datasets.principal = pendingImportPrincipal;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(datasets.principal));
+  if(pendingImportOtra.length > 0){
+    datasets.otra = pendingImportOtra;
+    localStorage.setItem(STORAGE_KEY_2, JSON.stringify(datasets.otra));
+  }
+  state.loans = datasets[state.activeTab];
   closeImportSheet();
   document.getElementById('searchInput').value = '';
   render();
-  toast('Datos reemplazados');
+  toast('Datos reemplazados en ambas pestañas');
 });
 
 function normalizeHeader(s){
@@ -1328,10 +1360,11 @@ function excelDateToStr(v){
   return v==null ? null : String(v).trim() || null;
 }
 
-function parseLoanRows(rows){
-  // find header row containing 'Nombre'
+function parseLoanRows(rows, searchFrom){
+  searchFrom = searchFrom || 0;
+  // find header row containing 'Nombre', starting from searchFrom
   let headerIdx = -1, cols = {};
-  for(let i=0;i<rows.length;i++){
+  for(let i=searchFrom;i<rows.length;i++){
     const row = rows[i] || [];
     const norm = row.map(normalizeHeader);
     const nombreIdx = norm.findIndex(c=>c==='nombre');
@@ -1348,19 +1381,20 @@ function parseLoanRows(rows){
       break;
     }
   }
-  if(headerIdx === -1) return [];
+  if(headerIdx === -1) return {loans: [], endIdx: rows.length};
 
   const out = [];
   let id = 1;
   let consecutiveBlanks = 0;
+  let endIdx = rows.length;
   for(let i=headerIdx+1;i<rows.length;i++){
     const row = rows[i] || [];
     const isBlankRow = row.every(c => c==null || String(c).trim()==='');
     const hasTotalesMarker = row.some(c => String(c||'').trim().toUpperCase()==='TOTALES');
-    if(hasTotalesMarker) break; // reliable end-of-table marker (may land in the Nº column due to a merged cell)
+    if(hasTotalesMarker){ endIdx = i; break; } // reliable end-of-table marker (may land in the Nº column due to a merged cell)
     if(isBlankRow){
       consecutiveBlanks++;
-      if(consecutiveBlanks >= 15) break; // long stretch of empty rows = true end of sheet content
+      if(consecutiveBlanks >= 15){ endIdx = i; break; } // long stretch of empty rows = true end of sheet content
       continue; // tolerate a stray blank separator row without ending the table
     }
     consecutiveBlanks = 0;
@@ -1382,7 +1416,13 @@ function parseLoanRows(rows){
       mora: cols.mora!=null && row[cols.mora] ? String(row[cols.mora]).trim() : null
     });
   }
-  return out;
+  return {loans: out, endIdx};
+}
+
+function parseTwoTables(rows){
+  const t1 = parseLoanRows(rows, 0);
+  const t2 = parseLoanRows(rows, t1.endIdx + 1);
+  return { principal: t1.loans, otra: t2.loans };
 }
 
 /* ---------- install hint (show once on mobile, not standalone) ---------- */
